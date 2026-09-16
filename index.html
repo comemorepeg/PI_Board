@@ -1,4 +1,4 @@
-f<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
@@ -112,6 +112,15 @@ body{font-family:var(--font);background:var(--bg3);color:var(--tx);min-height:10
 .sc-body{display:none}
 .sc-body.open{display:block}
 .own-squad-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--squad-accent,#378ADD);color:#fff;flex-shrink:0}
+/* Curadoria de iniciativas na PI */
+.iblock.not-in-pi{opacity:.42;filter:grayscale(.35)}
+.iblock.not-in-pi:hover{opacity:.7}
+.curation-chk{width:17px;height:17px;accent-color:#7A5AF8;cursor:pointer;flex-shrink:0;margin-right:2px}
+.btn-curation{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;border:.5px solid #C7C2F5;background:#EEEDFE;color:#5B4BD6;cursor:pointer;font-family:var(--font);white-space:nowrap;flex-shrink:0}
+.btn-curation:hover{background:#E3DEFB}
+.btn-curation.active{background:#5B4BD6;color:#fff;border-color:#5B4BD6}
+.curation-hint{font-size:11px;color:#5B4BD6;background:#EEEDFE;border:.5px solid #C7C2F5;border-radius:var(--r);padding:6px 11px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.pi-badge-in{font-size:9px;font-weight:700;padding:1px 6px;border-radius:99px;background:#E8F5E9;color:#1B5E20;border:.5px solid #81C784;flex-shrink:0}
 /* cap-wrap movido para inline no sc-hdr */
 
 
@@ -1175,6 +1184,69 @@ async function switchActivePi(piId){
   renderAll();
 }
 
+/* ══════════════════════════════════════════════════════════
+   CURADORIA DE INICIATIVAS (por PI + squad)
+   ──────────────────────────────────────────────────────────
+   Cada PO escolhe quais iniciativas da sua squad entram na PI.
+   Guardado no Firebase: pi_board/curation/{piId}/{squadId} = [iniIds]
+   PI nova → nenhuma selecionada (o PO marca o que incluir).
+══════════════════════════════════════════════════════════ */
+let CURATION = {};          // { piId: { squadId: [iniId,...] } }
+let curationMode = {};      // { squadId: bool } — modo edição de curadoria ligado por squad
+
+// id estável da iniciativa para guardar (azId quando vem do Azure; senão o id local)
+function iniKey(ini){ return String(ini.azId ?? ini.id); }
+
+// a iniciativa está incluída na PI ativa (para a squad dela)?
+function isIniInPi(sqId, ini){
+  const list = CURATION?.[activePiId]?.[sqId];
+  if(!Array.isArray(list)) return false; // PI nova / sem curadoria → nada incluído
+  return list.includes(iniKey(ini));
+}
+// alguma curadoria já foi feita para esta squad nesta PI?
+function squadHasCuration(sqId){
+  return Array.isArray(CURATION?.[activePiId]?.[sqId]);
+}
+
+function toggleCurationMode(sqId){
+  if(!canEdit(sqId)) return;
+  curationMode[sqId] = !curationMode[sqId];
+  renderAll();
+}
+
+function toggleIniInPi(sqId, iniId){
+  if(!canEdit(sqId)) return;
+  const sq = SQUADS.find(s=>s.id===sqId);
+  const ini = sq?.initiatives.find(i=>String(i.azId ?? i.id)===String(iniId) || i.id===iniId);
+  if(!ini) return;
+  if(!CURATION[activePiId]) CURATION[activePiId] = {};
+  if(!Array.isArray(CURATION[activePiId][sqId])) CURATION[activePiId][sqId] = [];
+  const key = iniKey(ini);
+  const arr = CURATION[activePiId][sqId];
+  const pos = arr.indexOf(key);
+  if(pos>=0) arr.splice(pos,1); else arr.push(key);
+  persistCuration(sqId);
+  renderAll();
+}
+
+async function persistCuration(sqId){
+  if(!fbDb || !activePiId) return;
+  try{
+    const list = CURATION?.[activePiId]?.[sqId] || [];
+    await fbDb.ref(`${PI_ROOT}/curation/${activePiId}/${sqId}`).set(list);
+    showSaveIndicator('saved');
+  }catch(e){ console.error('[Curation] persist falhou:',e); showSaveIndicator('error'); }
+}
+
+async function loadCuration(){
+  if(!fbDb) return;
+  try{
+    const snap = await fbDb.ref(`${PI_ROOT}/curation`).once('value');
+    CURATION = snap.val() || {};
+  }catch(e){ console.error('[Curation] load falhou:',e); CURATION = {}; }
+}
+
+
 const SQUADS=[
   {id:'finance',name:'Finance',icon:'ti-report-money',iconColor:'#1D9E75',iconBg:'#E1F5EE',velocity:34,sprints:6,
    initiatives:[
@@ -1290,7 +1362,7 @@ function enterApp(){
   renderAll();
   loadData().then(ok=>{
     // após conectar ao Firebase, carrega as PIs e aplica a ativa
-    loadPis().then(()=>{
+    Promise.all([loadPis(), loadCuration()]).then(()=>{
       ensureDefaultPi();
       applyActivePi();
       renderPiSelector();
@@ -1407,11 +1479,27 @@ function renderSquads(){
                           .filter(f=>activeSprint==='all'||f.stories.length>0)
     })).filter(i=>activeSprint==='all'||i.features.length>0);
 
-    const vPts=visI.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.reduce((c,s)=>c+s.pts,0),0),0);
-    const vS=visI.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.length,0),0);
-    const vF=visI.reduce((a,i)=>a+i.features.length,0);
-    const vD=visI.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.filter(s=>s.dep).length,0),0);
-    tI+=visI.length;tF+=vF;tS+=vS;tP+=vPts;tD+=vD;
+    // ── Curadoria: quais iniciativas entram na PI ativa ──
+    const inCuration = !!curationMode[sq.id];               // PO está editando a seleção?
+    const hasCur = squadHasCuration(sq.id);                 // já existe curadoria salva?
+    // No modo curadoria: mostra todas. Fora dele: só as incluídas (ou todas, esmaecidas, se nada foi curado ainda).
+    let curatedVisI;
+    if(inCuration){
+      curatedVisI = visI;
+    } else if(hasCur){
+      curatedVisI = visI.filter(i=>isIniInPi(sq.id, i));
+    } else {
+      curatedVisI = visI; // sem curadoria ainda → mostra todas (esmaecidas) para sinalizar que falta curar
+    }
+
+    // Contadores refletem só o que está na PI (as incluídas)
+    const inPiI = visI.filter(i=>isIniInPi(sq.id, i));
+    const countBase = hasCur ? inPiI : [];
+    const vPts=countBase.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.reduce((c,s)=>c+s.pts,0),0),0);
+    const vS=countBase.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.length,0),0);
+    const vF=countBase.reduce((a,i)=>a+i.features.length,0);
+    const vD=countBase.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.filter(s=>s.dep).length,0),0);
+    tI+=countBase.length;tF+=vF;tS+=vS;tP+=vPts;tD+=vD;
 
     const card=document.createElement('div');
     card.dataset.sqid = sq.id;
@@ -1422,9 +1510,9 @@ function renderSquads(){
     card.style.setProperty('--squad-accent', accentCol);
 
     // ── Iniciativas HTML ──
-    const initiativesHTML = visI.length===0
-      ? '<div class="empty">Nenhum item neste sprint</div>'
-      : visI.map(ini=>{
+    const initiativesHTML = curatedVisI.length===0
+      ? '<div class="empty">Nenhuma iniciativa nesta PI para o filtro atual</div>'
+      : curatedVisI.map(ini=>{
           const tb=TYPE_BADGE[ini.type]||TYPE_BADGE['Novo'];
           const sc=STATUS_CFG[ini.status]||STATUS_CFG['Em Priorizacao'];
           const iPts=ini.features.reduce((a,f)=>a+f.stories.reduce((b,s)=>b+s.pts,0),0);
@@ -1501,13 +1589,18 @@ function renderSquads(){
           const bCnt=(ini.blockers||[]).length;
           const oCnt=(ini.obs||[]).length;
 
-          return `<div class="iblock" draggable="${editable}" data-sqid="${sq.id}" data-iid="${ini.id}"
-            ${editable?'onDragStart="onDragStart(event)" onDragOver="onDragOver(event)" onDragLeave="onDragLeave(event)" onDrop="onDrop(event)" onDragEnd="onDragEnd(event)"':''}>
+          const iniIn = isIniInPi(sq.id, ini);
+          const dimClass = (!iniIn && (inCuration || !hasCur)) ? ' not-in-pi' : '';
+          return `<div class="iblock${dimClass}" draggable="${editable && !inCuration}" data-sqid="${sq.id}" data-iid="${ini.id}"
+            ${editable && !inCuration?'onDragStart="onDragStart(event)" onDragOver="onDragOver(event)" onDragLeave="onDragLeave(event)" onDrop="onDrop(event)" onDragEnd="onDragEnd(event)"':''}>
             <div class="ihdr">
-              <i class="ti ti-grip-vertical drag-handle${editable?'':' disabled'}"></i>
+              ${inCuration
+                ? `<input type="checkbox" class="curation-chk" ${iniIn?'checked':''} onclick="event.stopPropagation();toggleIniInPi('${sq.id}','${iniKey(ini)}')" title="Incluir na PI"/>`
+                : `<i class="ti ti-grip-vertical drag-handle${editable && !inCuration?'':' disabled'}"></i>`}
               <div class="itoggle" onclick="togI('${ini.id}')">
                 <span class="itype-badge" style="background:${tb.bg};color:${tb.color};border:.5px solid ${tb.border}">${ini.type}</span>
                 <span class="ititle" title="${ini.title}">${ini.title}</span>
+                ${iniIn && !inCuration?`<span class="pi-badge-in" title="Nesta PI"><i class="ti ti-check" style="font-size:8px"></i> PI</span>`:''}
                 <span class="ipts">${iPts}pt</span>
                 ${ini.desc?`<button class="desc-toggle" onclick="event.stopPropagation();togDesc('idesc-${ini.id}')" title="Ver descrição"><i class="ti ti-info-circle"></i></button>`:''}
                 ${rCountBadge}
@@ -1589,9 +1682,14 @@ function renderSquads(){
             ${isOwn ? `<span class="own-squad-badge" style="background:${accentCol}">Minha Squad</span>` : ''}
             ${!editable ? `<span style="font-size:10px;color:var(--tx2)"><i class="ti ti-lock" style="font-size:10px"></i> leitura</span>` : ''}
             ${alertBadge}${blockBadge}
+            ${editable ? `<button class="btn-curation${inCuration?' active':''}" onclick="event.stopPropagation();toggleCurationMode('${sq.id}')" title="Escolher quais iniciativas entram nesta PI">
+              <i class="ti ti-list-check" style="font-size:11px"></i>${inCuration?'Concluir seleção':'Selecionar iniciativas da PI'}
+            </button>` : ''}
           </div>
           <div class="sq-meta">
-            ${visI.length} iniciativas · ${vF} features · ${vS} stories · ${vPts}pts
+            ${hasCur
+              ? `${inPiI.length} iniciativa${inPiI.length!==1?'s':''} na PI · ${vF} features · ${vS} stories · ${vPts}pts`
+              : `<span style="color:#5B4BD6">Nenhuma iniciativa selecionada para a PI ainda</span> · ${visI.length} disponíveis no Azure`}
           </div>
           <div class="vel-inline-wrap">
             <span class="vel-inline-label">Velocity:</span>
@@ -1611,6 +1709,7 @@ function renderSquads(){
       </div>
       <div class="sc-body${shouldExpand?' open':''}" id="sc-body-${sq.id}">
         <div class="ilist">
+          ${inCuration ? `<div class="curation-hint"><i class="ti ti-info-circle"></i> Marque as iniciativas que fazem parte desta PI Planning. As desmarcadas ficam esmaecidas e não contam nos totais. Clique em "Concluir seleção" quando terminar.</div>` : ''}
           ${initiativesHTML}
           <button class="add-btn" onclick="openModal('${sq.id}')" ${editable?'':'disabled'}>
             <i class="ti ti-plus"></i> Adicionar iniciativa, feature ou story
