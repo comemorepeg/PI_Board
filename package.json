@@ -1,7 +1,0 @@
-{
-  "name": "pi-board-azure-backend-vercel",
-  "version": "1.0.0",
-  "description": "Backend serverless (Vercel) do PI Board para Azure DevOps",
-  "private": true,
-  "engines": { "node": ">=18" }
-}
