@@ -1,0 +1,2951 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PI Board · Ituran</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#eeecea;
+  --tx:#1a1a18;--tx2:#6b6b67;
+  --bd:rgba(0,0,0,.10);--bd2:rgba(0,0,0,.18);--bd3:rgba(0,0,0,.28);
+  --r:8px;--rl:12px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1e1e1c;--bg2:#282825;--bg3:#313130;
+  --tx:#f0ede8;--tx2:#9a9990;
+  --bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.14);--bd3:rgba(255,255,255,.22);
+}}
+body{font-family:var(--font);background:var(--bg3);color:var(--tx);min-height:100vh}
+.shell{max-width:1200px;margin:0 auto;padding:28px 24px 60px}
+
+/* LOGIN */
+.login-screen{display:none;position:fixed;inset:0;z-index:9000;background:var(--bg3);align-items:center;justify-content:center}
+.login-screen.visible{display:flex}
+.login-card{background:var(--bg);border:.5px solid var(--bd2);border-radius:20px;padding:40px 44px;width:100%;max-width:380px;margin:16px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.10)}
+.login-logo{width:54px;height:54px;border-radius:14px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.login-title{font-size:20px;font-weight:700;color:var(--tx);margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--tx2);margin-bottom:26px;line-height:1.6}
+.login-field{display:flex;flex-direction:column;gap:5px;margin-bottom:13px;text-align:left}
+.login-label{font-size:12px;font-weight:500;color:var(--tx2)}
+.login-input{padding:10px 12px;font-size:14px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);color:var(--tx);font-family:var(--font);outline:none;width:100%;transition:border-color .15s}
+.login-input:focus{border-color:#378ADD}
+.login-btn-submit{width:100%;padding:11px;font-size:14px;font-weight:600;border-radius:var(--r);border:none;background:var(--tx);color:var(--bg);cursor:pointer;font-family:var(--font);margin-top:4px;transition:opacity .15s}
+.login-btn-submit:hover{opacity:.85}
+.login-err{margin-top:12px;font-size:12px;color:#E24B4A;display:none;background:#FDEEEE;border:.5px solid #F0A0A0;border-radius:var(--r);padding:8px 12px}
+.login-err.show{display:block}
+.login-lock{font-size:11px;color:var(--tx2);margin-top:16px;display:flex;align-items:center;justify-content:center;gap:5px;opacity:.6}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;padding-bottom:18px;border-bottom:.5px solid var(--bd2);margin-bottom:22px}
+.topbar h1{font-size:21px;font-weight:600}
+.topbar p{font-size:12px;color:var(--tx2);margin-top:3px}
+.topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sprint-tabs{display:flex;gap:5px;flex-wrap:wrap}
+/* Seletor de PI */
+.pi-select{padding:6px 10px;font-size:13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg);color:var(--tx);font-family:var(--font);outline:none;max-width:200px;cursor:pointer}
+.pi-select:focus{border-color:var(--bd3)}
+.pi-mode-opt{flex:1;display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg);cursor:pointer;transition:all .15s}
+.pi-mode-opt:has(input:checked){border-color:#7A5AF8;background:#F5F3FF}
+.pi-mode-opt input{accent-color:#7A5AF8;flex-shrink:0}
+.pi-sprints-list{max-height:220px;overflow-y:auto;border:.5px solid var(--bd2);border-radius:var(--r);background:var(--bg2);padding:6px}
+.pi-sprints-empty{font-size:12px;color:var(--tx2);font-style:italic;padding:12px;text-align:center}
+.pi-sprint-row{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--r);cursor:pointer;transition:background .12s}
+.pi-sprint-row:hover{background:var(--bg)}
+.pi-sprint-row input{accent-color:#7A5AF8;flex-shrink:0}
+.pi-sprint-name{font-size:13px;font-weight:600;color:var(--tx)}
+.pi-sprint-dates{font-size:11px;color:var(--tx2);margin-left:auto}
+.pi-sprint-q{font-size:9px;font-weight:700;padding:1px 6px;border-radius:99px;flex-shrink:0}
+.pi-q3{background:#E1F5EE;color:#085041;border:.5px solid #5DCAA5}
+.pi-q4{background:#ECEFF1;color:#37474F;border:.5px solid #B0BEC5}
+.stab{padding:5px 13px;font-size:12px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg);color:var(--tx2);cursor:pointer;transition:all .15s;white-space:nowrap;text-align:center}
+.stab:hover{background:var(--bg2);color:var(--tx)}
+.stab.active{background:var(--tx);color:var(--bg);border-color:var(--tx);font-weight:500}
+.stab .stab-date{font-size:10px;opacity:.7;display:block;margin-top:1px}
+.btn-action{display:flex;align-items:center;gap:6px;padding:6px 14px;font-size:13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg);color:var(--tx2);cursor:pointer;font-family:var(--font);transition:all .15s;white-space:nowrap}
+.btn-action:hover{background:var(--bg2);color:var(--tx)}
+.btn-danger{color:#E24B4A;border-color:rgba(226,75,74,.25)}
+.btn-danger:hover{background:rgba(226,75,74,.06)!important;color:#E24B4A!important}
+.user-chip{display:flex;align-items:center;gap:6px;padding:5px 10px 5px 8px;border-radius:99px;background:var(--bg2);border:.5px solid var(--bd)}
+.user-chip i{font-size:14px;color:var(--tx2)}
+.user-chip-name{font-size:12px;color:var(--tx)}
+.user-chip-squad{font-size:10px;color:var(--tx2);background:var(--bg3);border-radius:99px;padding:1px 7px;margin-left:2px}
+.logout-btn{background:none;border:none;cursor:pointer;font-size:12px;color:var(--tx2);padding:2px 6px;border-radius:6px;font-family:var(--font);transition:color .12s}
+.logout-btn:hover{color:#E24B4A}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;display:inline-block;margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:22px}
+@media(max-width:640px){.metrics{grid-template-columns:repeat(2,1fr)}}
+.mc{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);padding:13px 15px}
+.mc-label{font-size:11px;color:var(--tx2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.mc-val{font-size:24px;font-weight:600;line-height:1}
+.mc-sub{font-size:11px;color:var(--tx2);margin-top:3px}
+
+/* VELOCITY */
+/* input de velocity inline no header do squad */
+.vi-inline{padding:4px 7px;font-size:12px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);color:var(--tx);font-family:var(--font);outline:none;width:58px;text-align:center}
+.vi-inline:focus{border-color:var(--bd3)}
+.vi-inline:disabled{opacity:.45;cursor:not-allowed}
+.vel-inline-wrap{display:flex;align-items:center;gap:5px;margin-top:3px}
+.vel-inline-label{font-size:10px;color:var(--tx2)}
+
+/* SQUADS */
+/* SQUADS — layout vertical expansível */
+.squads{display:flex;flex-direction:column;gap:10px}
+.sc{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);overflow:hidden;transition:box-shadow .2s}
+.sc.expanded{box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.sc.locked{opacity:.8}
+.sc.own-squad{border-left:3px solid var(--squad-accent,#378ADD)}
+.sc-hdr{padding:13px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;transition:background .12s}
+.sc-hdr:hover{background:var(--bg2)}
+.sc-hdr.expanded{border-bottom:.5px solid var(--bd)}
+.sc-expand-icon{font-size:16px;color:var(--tx2);transition:transform .22s;flex-shrink:0;margin-left:auto}
+.sc-expand-icon.open{transform:rotate(180deg)}
+.sq-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sq-name{font-size:15px;font-weight:700}
+.sq-meta{font-size:12px;color:var(--tx2);margin-top:2px}
+.sc-body{display:none}
+.sc-body.open{display:block}
+.own-squad-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--squad-accent,#378ADD);color:#fff;flex-shrink:0}
+/* cap-wrap movido para inline no sc-hdr */
+
+
+/* INICIATIVAS */
+.ilist{padding:11px 15px;display:flex;flex-direction:column;gap:10px}
+.iblock{border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden;transition:box-shadow .15s,opacity .15s}
+.iblock.dragging{opacity:.4;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.iblock.drag-over-top{border-top:2.5px solid #378ADD!important}
+.iblock.drag-over-bottom{border-bottom:2.5px solid #378ADD!important}
+.ihdr{padding:9px 12px;display:flex;align-items:center;gap:8px;background:var(--bg2);transition:background .12s}
+.ihdr:hover{background:var(--bg3)}
+.drag-handle{cursor:grab;color:var(--tx2);font-size:15px;flex-shrink:0;padding:2px 3px;border-radius:4px;opacity:.4;transition:opacity .12s}
+.drag-handle:hover{opacity:1}
+.drag-handle:active{cursor:grabbing}
+.drag-handle.disabled{cursor:default;pointer-events:none;opacity:.15}
+.itoggle{cursor:pointer;flex:1;display:flex;align-items:center;gap:7px;min-width:0}
+.itype-badge{font-size:10px;font-weight:500;padding:2px 7px;border-radius:99px;white-space:nowrap;flex-shrink:0}
+.ititle{font-size:13px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ipts{font-size:11px;color:var(--tx2);white-space:nowrap;flex-shrink:0}
+.chev{font-size:14px;color:var(--tx2);transition:transform .2s;flex-shrink:0}
+.chev.open{transform:rotate(180deg)}
+.iactions{display:flex;gap:2px;flex-shrink:0;align-items:center}
+.status-pill{font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;cursor:pointer;border:.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:opacity .15s}
+.status-pill:hover{opacity:.75}
+.status-pill.disabled{cursor:default;pointer-events:none}
+.sp-priorizando{background:#FFF8E1;color:#7B5800;border-color:#FFD54F}
+.sp-refinamento{background:#E3F2FD;color:#0D47A1;border-color:#90CAF9}
+.sp-priorizado{background:#E8F5E9;color:#1B5E20;border-color:#81C784}
+.sp-despriorizado{background:#F5F5F5;color:#616161;border-color:#BDBDBD;text-decoration:line-through}
+@media(prefers-color-scheme:dark){
+  .sp-priorizando{background:#3E2E00;color:#FFD54F;border-color:#7B5800}
+  .sp-refinamento{background:#0D2844;color:#90CAF9;border-color:#1565C0}
+  .sp-priorizado{background:#0D2A0D;color:#81C784;border-color:#2E7D32}
+  .sp-despriorizado{background:#2a2a2a;color:#757575;border-color:#424242}
+}
+
+/* FEATURES */
+.flist-inner{display:none;flex-direction:column;border-top:.5px solid var(--bd)}
+.flist-inner.open{display:flex}
+/* nível Epic */
+.epblock{border-bottom:.5px solid var(--bd)}
+.epblock:last-child{border-bottom:none}
+.ephdr{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg2);cursor:pointer;user-select:none}
+.ephdr:hover{background:var(--bg3)}
+.epbadge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#7A5AF8;background:#EEEDFE;border:.5px solid #C7C2F5;border-radius:99px;padding:1px 7px;flex-shrink:0}
+.eptitle{font-size:12.5px;font-weight:600;color:var(--tx);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eppts{font-size:11px;font-weight:600;color:var(--tx2);flex-shrink:0}
+.epfeats{display:none;flex-direction:column;padding-left:10px;border-left:2px solid #EEEDFE;margin-left:14px}
+.epfeats.open{display:flex}
+.fblock{border-bottom:.5px solid var(--bd)}
+.fblock:last-child{border-bottom:none}
+.fhdr{padding:7px 12px 7px 22px;display:flex;align-items:center;gap:7px;background:var(--bg);transition:background .12s}
+.fhdr:hover{background:var(--bg2)}
+.ftoggle{cursor:pointer;flex:1;display:flex;align-items:center;gap:7px;min-width:0}
+.fbadge{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ftitle{font-size:12px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx)}
+.fpts{font-size:11px;color:var(--tx2);white-space:nowrap;flex-shrink:0}
+.faction{display:flex;gap:1px;flex-shrink:0}
+.ib{background:none;border:none;cursor:pointer;padding:2px 4px;border-radius:5px;font-size:12px;color:var(--tx2);transition:background .12s,color .12s;line-height:1}
+.ib:hover{background:var(--bg3);color:var(--tx)}
+.ib.del:hover{color:#E24B4A}
+.ib:disabled{opacity:.25;cursor:not-allowed;pointer-events:none}
+
+/* STORIES */
+.slist{display:none;flex-direction:column}
+.slist.open{display:flex}
+.srow{display:flex;align-items:center;gap:7px;padding:5px 12px 5px 36px;border-top:.5px solid var(--bd);background:var(--bg)}
+.sdot{font-size:10px;color:var(--tx2);flex-shrink:0}
+.stitle{flex:1;color:var(--tx2);font-size:11px;min-width:0}
+.dep{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:1px 5px;border-radius:99px;background:#FAEEDA;color:#633806;border:.5px solid #FAC775;margin-left:3px;white-space:nowrap}
+@media(prefers-color-scheme:dark){.dep{background:#412402;color:#FAC775;border-color:#633806}}
+.spts{font-size:11px;font-weight:500;padding:2px 5px;border-radius:var(--r);background:var(--bg2);color:var(--tx2);white-space:nowrap;flex-shrink:0}
+.ssprint{font-size:10px;padding:2px 6px;border-radius:99px;white-space:nowrap;flex-shrink:0}
+
+/* RISCOS / BLOQUEIOS / OBS */
+.rbo-bar{display:flex;align-items:center;gap:6px;padding:7px 12px;border-top:.5px solid var(--bd);background:var(--bg);flex-wrap:wrap}
+.rbo-trigger{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;font-size:11px;font-weight:500;border-radius:99px;cursor:pointer;border:.5px solid transparent;transition:all .15s;font-family:var(--font);background:none;white-space:nowrap}
+.rbo-trigger.risks{color:#7B4900;background:#FFF8E1;border-color:#FFD54F}
+.rbo-trigger.risks:hover{background:#FFE082}
+.rbo-trigger.blockers{color:#5C0A0A;background:#FDEEEE;border-color:#F0A0A0}
+.rbo-trigger.blockers:hover{background:#FFCDD2}
+.rbo-trigger.obs{color:var(--tx2);background:var(--bg2);border-color:var(--bd2)}
+.rbo-trigger.obs:hover{background:var(--bg3)}
+.rbo-trigger:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.rbo-panel{display:none;border-top:.5px solid var(--bd);background:var(--bg);padding:10px 14px 12px}
+.rbo-panel.open{display:block}
+.rbo-panel-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.rbo-panel-title{font-size:12px;font-weight:600;color:var(--tx);flex:1}
+.rbo-panel-close{background:none;border:none;cursor:pointer;color:var(--tx2);font-size:16px;padding:0 2px;line-height:1}
+.rbo-panel-close:hover{color:var(--tx)}
+.rbo-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.rbo-item{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-radius:var(--r);font-size:12px;border:.5px solid var(--bd)}
+.rbo-item.type-risks{background:#FFF8E1;border-color:#FFD54F}
+.rbo-item.type-blockers{background:#FDEEEE;border-color:#F0A0A0}
+.rbo-item.type-obs{background:#f0ede8;border-color:rgba(0,0,0,.15);color:#1a1a18}
+.rbo-item-left{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.rbo-item-text{color:#1a1a18;line-height:1.5;word-break:break-word}
+.rbo-item-badges{display:flex;align-items:center;gap:5px}
+.rbo-type-chip{font-size:9px;font-weight:600;padding:1px 6px;border-radius:99px;text-transform:uppercase}
+.chip-risks{background:#FFD54F;color:#7B4900}
+.chip-blockers{background:#F0A0A0;color:#5C0A0A}
+.chip-obs{background:var(--bg3);color:var(--tx2)}
+.rbo-add-btn{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2);background:none;border:.5px dashed var(--bd2);border-radius:var(--r);padding:5px 10px;cursor:pointer;font-family:var(--font);transition:background .12s;width:100%;margin-top:4px}
+.rbo-add-btn:hover{background:var(--bg2);color:var(--tx)}
+.rbo-add-btn:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.rbo-empty{font-size:12px;color:var(--tx2);font-style:italic;padding:4px 0 6px}
+.rbo-sev{font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;white-space:nowrap;flex-shrink:0}
+.sev-alto{background:#FDEEEE;color:#5C0A0A;border:.5px solid #F0A0A0}
+.sev-medio{background:#FFF8E1;color:#7B5800;border:.5px solid #FFD54F}
+.sev-baixo{background:#E8F5E9;color:#1B5E20;border:.5px solid #81C784}
+/* ROAM */
+.roam-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0;letter-spacing:.02em;cursor:pointer;border:.5px solid transparent;font-family:var(--font)}
+.roam-badge:disabled{cursor:default;pointer-events:none}
+.roam-R{background:#E8F5E9;color:#1B5E20;border-color:#81C784}
+.roam-O{background:#E3F2FD;color:#0D47A1;border-color:#90CAF9}
+.roam-A{background:#FFF8E1;color:#7B5800;border-color:#FFD54F}
+.roam-M{background:#EEEDFE;color:#26215C;border-color:#AFA9EC}
+.roam-none{background:var(--bg2);color:var(--tx2);border-color:var(--bd2)}
+.roam-owner{font-size:10px;color:#6b6b67;display:flex;align-items:center;gap:3px}
+/* ROAM dropdown menu */
+.roam-menu{position:fixed;background:var(--bg);border:.5px solid var(--bd2);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:600;min-width:200px;overflow:hidden;display:none}
+.roam-menu.open{display:block}
+.roam-opt{padding:9px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:9px;transition:background .12s}
+.roam-opt:hover{background:var(--bg2)}
+.roam-opt-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0}
+/* Report ROAM */
+.roam-report-screen{display:none;position:fixed;inset:0;background:var(--bg3);z-index:950;overflow-y:auto}
+.roam-report-screen.open{display:block}
+.roam-report-shell{max-width:960px;margin:0 auto;padding:28px 24px 60px}
+.roam-col-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--r);margin-bottom:10px;font-size:13px;font-weight:700}
+.roam-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+@media(max-width:700px){.roam-grid{grid-template-columns:1fr}}
+.roam-col{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);overflow:hidden}
+.roam-col-items{padding:10px 14px;display:flex;flex-direction:column;gap:8px;min-height:60px}
+.roam-risk-card{padding:10px 12px;border-radius:var(--r);border:.5px solid var(--bd);font-size:12px;display:flex;flex-direction:column;gap:4px}
+.roam-risk-card.R{background:#E8F5E9;border-color:#81C784;color:#1a1a18}
+.roam-risk-card.O{background:#E3F2FD;border-color:#90CAF9;color:#1a1a18}
+.roam-risk-card.A{background:#FFF8E1;border-color:#FFD54F;color:#1a1a18}
+.roam-risk-card.M{background:#EEEDFE;border-color:#AFA9EC;color:#1a1a18}
+.roam-risk-card.none{background:#f0ede8;border-color:rgba(0,0,0,.12);color:#1a1a18}
+.roam-risk-title{font-size:12px;color:#1a1a18;line-height:1.5;flex:1}
+.roam-risk-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px}
+.roam-empty-col{font-size:12px;color:var(--tx2);font-style:italic;padding:4px 0}
+.roam-summary-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.roam-summary-chip{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r);border:.5px solid var(--bd);background:var(--bg);font-size:13px}
+.roam-summary-num{font-size:20px;font-weight:700;line-height:1}
+.rbo-add-btn{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2);background:none;border:.5px dashed var(--bd2);border-radius:var(--r);padding:5px 10px;cursor:pointer;font-family:var(--font);transition:background .12s;width:100%}
+.rbo-add-btn:hover{background:var(--bg2);color:var(--tx)}
+.rbo-add-btn:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.rbo-empty{font-size:12px;color:var(--tx2);font-style:italic;padding:4px 0 8px}
+
+.add-btn{padding:7px 0;font-size:12px;width:100%;color:var(--tx2);text-align:center;border:.5px dashed var(--bd2);border-radius:var(--r);cursor:pointer;background:none;font-family:var(--font);transition:background .15s;margin-top:2px}
+.add-btn:hover{background:var(--bg2);color:var(--tx)}
+.add-btn:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.empty{padding:18px;text-align:center;color:var(--tx2);font-size:13px}
+
+/* DEPS */
+.depsec{margin-top:24px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);overflow:hidden}
+.dephdr{padding:13px 18px;border-bottom:.5px solid var(--bd);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.dephdr h2{font-size:14px;font-weight:600;flex:1}
+.depbody{padding:12px 18px;display:none;flex-direction:column;gap:7px}
+.depbody.open{display:flex}
+.deprow{display:flex;align-items:center;gap:9px;font-size:13px;padding:7px 11px;border-radius:var(--r);border:.5px solid var(--bd);background:var(--bg2);flex-wrap:wrap}
+.dep-from{font-weight:500}.dep-arr{color:var(--tx2)}.dep-to{color:var(--tx2)}
+.dep-story{font-size:11px;color:var(--tx2);margin-left:auto}
+.dep-sc{font-size:11px;padding:2px 7px;border-radius:99px;white-space:nowrap}
+
+/* REPORT */
+.report-screen{display:none;position:fixed;inset:0;background:var(--bg3);z-index:900;overflow-y:auto}
+.report-screen.open{display:block}
+.report-shell{max-width:960px;margin:0 auto;padding:28px 24px 60px}
+.report-topbar{display:flex;align-items:center;gap:10px;margin-bottom:22px;padding-bottom:16px;border-bottom:.5px solid var(--bd2);flex-wrap:wrap}
+.report-topbar h1{font-size:18px;font-weight:600;flex:1}
+.report-tabs{display:flex;gap:5px;margin-bottom:22px;flex-wrap:wrap}
+.report-tab{padding:6px 16px;font-size:13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg);color:var(--tx2);cursor:pointer;transition:all .15s;font-family:var(--font)}
+.report-tab:hover{background:var(--bg2);color:var(--tx)}
+.report-tab.active{background:var(--tx);color:var(--bg);border-color:var(--tx);font-weight:500}
+.report-squad-selector{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.report-squad-selector label{font-size:13px;color:var(--tx2);font-weight:500}
+.report-squad-sel{padding:7px 12px;font-size:13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);color:var(--tx);font-family:var(--font);outline:none;min-width:180px}
+/* resumo */
+.report-sprint-block{margin-bottom:28px}
+.report-sprint-title{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.report-sprint-title h2{font-size:15px;font-weight:600}
+.rsd{font-size:12px;color:var(--tx2);background:var(--bg2);border:.5px solid var(--bd);border-radius:99px;padding:3px 10px;white-space:nowrap}
+.rst{font-size:12px;font-weight:600;color:var(--tx2);margin-left:auto}
+.report-squads-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media(max-width:700px){.report-squads-row{grid-template-columns:repeat(2,1fr)}}
+.rsq-card{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.rsq-hdr{padding:8px 12px;display:flex;align-items:center;gap:7px;border-bottom:.5px solid var(--bd)}
+.rsq-name{font-size:13px;font-weight:600;flex:1}
+.rsq-pts{font-size:13px;font-weight:700}
+.rflist{padding:7px 12px;display:flex;flex-direction:column;gap:4px}
+.rfrow{font-size:11px;display:flex;flex-direction:column;padding:4px 0;border-bottom:.5px solid var(--bd)}
+.rfrow:last-child{border-bottom:none}
+.rfrow-top{display:flex;align-items:center;gap:5px}
+.rfrow-init{font-size:10px;color:var(--tx2);font-style:italic;margin-top:1px}
+.rno{font-size:12px;color:var(--tx2);padding:8px 0;font-style:italic}
+.rsummary{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);padding:16px 18px;margin-bottom:22px}
+.rsummary h3{font-size:14px;font-weight:600;margin-bottom:12px}
+.rtable{width:100%;border-collapse:collapse;font-size:12px}
+.rtable th{text-align:left;padding:6px 8px;color:var(--tx2);font-weight:500;border-bottom:.5px solid var(--bd2);background:var(--bg2)}
+.rtable td{padding:6px 8px;border-bottom:.5px solid var(--bd);vertical-align:top}
+.rtable tr:last-child td{border-bottom:none}
+/* report gerencial */
+.mg-section{margin-bottom:32px}
+.mg-squad-hdr{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);margin-bottom:14px}
+.mg-squad-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mg-squad-name{font-size:17px;font-weight:700;color:var(--tx)}
+.mg-squad-meta{font-size:12px;color:var(--tx2);margin-top:3px}
+.mg-vel-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--bg2);border:.5px solid var(--bd2);color:var(--tx2);margin-left:auto}
+.mg-ini{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.mg-ini-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:.5px solid var(--bd);background:var(--bg2)}
+.mg-ini-title{font-size:14px;font-weight:600;color:var(--tx);flex:1}
+.mg-ini-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.mg-subsection{display:flex;flex-direction:column;gap:6px}
+.mg-sub-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.mg-feat{padding:7px 10px;background:var(--bg2);border-radius:var(--r);border:.5px solid var(--bd)}
+.mg-feat-name{font-size:12px;font-weight:600;color:var(--tx);margin-bottom:4px}
+.mg-story{display:flex;align-items:flex-start;gap:7px;padding:4px 0;border-top:.5px solid var(--bd);font-size:11px}
+.mg-story:first-child{border-top:none}
+.mg-story-title{flex:1;color:var(--tx2)}
+.mg-story-pts{font-size:10px;font-weight:600;padding:1px 5px;border-radius:4px;background:var(--bg3);color:var(--tx2);white-space:nowrap}
+.mg-story-sprint{font-size:10px;padding:1px 6px;border-radius:99px;white-space:nowrap}
+.mg-rbo-item{display:flex;align-items:flex-start;gap:7px;padding:5px 8px;border-radius:var(--r);margin-bottom:4px;font-size:12px;border:.5px solid transparent}
+.mg-rbo-item.risks{background:#FFF8E1;border-color:#FFD54F}
+.mg-rbo-item.blockers{background:#FDEEEE;border-color:#F0A0A0}
+.mg-rbo-item.obs{background:#f0ede8;border-color:rgba(0,0,0,.15)}
+.mg-rbo-text{flex:1;line-height:1.5;color:#1a1a18}
+.mg-empty{font-size:12px;color:var(--tx2);font-style:italic}
+/* ROAM */
+.roam-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;cursor:pointer;border:.5px solid transparent;transition:all .15s;user-select:none;white-space:nowrap;flex-shrink:0}
+.roam-pill:hover{opacity:.8}
+.roam-pill.disabled{cursor:default;pointer-events:none}
+.roam-R{background:#E8F5E9;color:#1B5E20;border-color:#81C784}
+.roam-O{background:#E3F2FD;color:#0D47A1;border-color:#90CAF9}
+.roam-A{background:#FFF8E1;color:#7B5800;border-color:#FFD54F}
+.roam-M{background:#EDE7F6;color:#311B92;border-color:#B39DDB}
+.roam-none{background:var(--bg2);color:var(--tx2);border-color:var(--bd2)}
+.roam-menu{position:fixed;background:var(--bg);border:.5px solid var(--bd2);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.14);z-index:600;min-width:200px;overflow:hidden;display:none}
+.roam-menu.open{display:block}
+.roam-opt{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;transition:background .12s}
+.roam-opt:hover{background:var(--bg2)}
+.roam-opt-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;min-width:24px;text-align:center}
+.roam-opt-desc{color:var(--tx2);font-size:11px}
+/* owner field no item de risco */
+.risk-owner{font-size:10px;color:var(--tx2);margin-top:2px;display:flex;align-items:center;gap:4px}
+/* report ROAM */
+.roam-report-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);margin-bottom:16px}
+.roam-board{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px}
+@media(max-width:640px){.roam-board{grid-template-columns:1fr}}
+.roam-col{background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);overflow:hidden}
+.roam-col-hdr{padding:10px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;border-bottom:.5px solid var(--bd)}
+.roam-col-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-height:60px}
+.roam-card{padding:10px 12px;border-radius:var(--r);border:.5px solid var(--bd);font-size:12px;display:flex;flex-direction:column;gap:5px}
+.roam-card-top{display:flex;align-items:flex-start;gap:8px}
+.roam-card-text{flex:1;color:var(--tx);line-height:1.5}
+.roam-card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.roam-empty-col{font-size:12px;color:var(--tx2);font-style:italic;padding:4px 0}
+.mg-desc{font-size:12px;color:var(--tx2);line-height:1.6;margin-bottom:6px;font-style:italic}
+@media print{
+  .report-topbar .btn-action,.report-tabs,.report-squad-selector{display:none!important}
+  .report-screen{position:static!important;background:white!important}
+  body,html{background:white!important}
+  .mg-ini{break-inside:avoid}
+  .mg-section{break-before:page}
+  .mg-section:first-child{break-before:auto}
+}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--bg);border-radius:var(--rl);border:.5px solid var(--bd2);padding:22px;width:100%;max-width:480px;margin:16px;max-height:90vh;overflow-y:auto}
+.mtitle{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.mclose{background:none;border:none;cursor:pointer;font-size:21px;color:var(--tx2);line-height:1;padding:0}
+.mclose:hover{color:var(--tx)}
+.mlevel-tabs{display:flex;gap:5px;margin-bottom:16px}
+.mltab{flex:1;padding:6px;font-size:12px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);color:var(--tx2);cursor:pointer;text-align:center;transition:all .15s}
+.mltab.active{background:var(--tx);color:var(--bg);border-color:var(--tx);font-weight:500}
+.msec{display:none}
+.msec.active{display:block}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:13px}
+.fl{font-size:12px;color:var(--tx2);font-weight:500}
+.fi{padding:8px 10px;font-size:13px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);color:var(--tx);font-family:var(--font);outline:none;width:100%;transition:border-color .15s}
+.fi:focus{border-color:var(--bd3)}
+.fi-ta{resize:vertical;min-height:72px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.err{font-size:12px;color:#E24B4A;margin-top:3px;display:none}
+.mactions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.btn-c{padding:7px 15px;font-size:13px;border-radius:var(--r);border:.5px solid var(--bd2);background:none;color:var(--tx2);cursor:pointer;font-family:var(--font)}
+.btn-c:hover{background:var(--bg2)}
+.btn-s{padding:7px 18px;font-size:13px;border-radius:var(--r);border:none;background:var(--tx);color:var(--bg);cursor:pointer;font-weight:500;font-family:var(--font)}
+.btn-s:hover{opacity:.85}
+.btn-d{padding:7px 15px;font-size:13px;border-radius:var(--r);border:none;background:#E24B4A;color:#fff;cursor:pointer;font-weight:500;font-family:var(--font)}
+.conf-box{background:var(--bg);border-radius:var(--rl);border:.5px solid var(--bd2);padding:22px;width:100%;max-width:360px;margin:16px}
+.conf-title{font-size:15px;font-weight:600;margin-bottom:7px}
+.conf-msg{font-size:13px;color:var(--tx2);line-height:1.6;margin-bottom:18px}
+
+/* DESCRIÇÃO */
+.desc-text{font-size:11px;color:var(--tx2);line-height:1.5;padding:4px 12px 4px 22px;border-top:.5px solid var(--bd);background:var(--bg);word-break:break-word;white-space:pre-wrap}
+.desc-text-ini{font-size:11px;color:var(--tx2);line-height:1.5;padding:4px 0;word-break:break-word;white-space:pre-wrap;flex:1;min-width:0}
+.desc-toggle{font-size:10px;color:var(--tx2);cursor:pointer;padding:0 4px;opacity:.6;flex-shrink:0;background:none;border:none;font-family:var(--font)}
+.desc-toggle:hover{opacity:1}
+
+/* STATUS DROPDOWN */
+.status-menu{position:fixed;background:var(--bg);border:.5px solid var(--bd2);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:500;min-width:160px;overflow:hidden;display:none}
+.status-menu.open{display:block}
+.status-opt{padding:8px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .12s}
+.status-opt:hover{background:var(--bg2)}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+@media print{
+  .topbar,.vpanel,.depsec,.btn-action,.login-screen{display:none!important}
+  .report-screen{position:static;background:white}
+  .report-shell{padding:0}
+  .report-topbar .btn-action{display:none!important}
+  body{background:white}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen visible" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo"><i class="ti ti-map-pin" style="font-size:26px;color:#1D9E75"></i></div>
+    <div class="login-title">PI Board · Ituran</div>
+    <div class="login-sub">Acesso restrito.<br>Entre com suas credenciais.</div>
+    <div class="login-field"><label class="login-label">Usuário</label>
+      <input class="login-input" id="login-user" type="text" placeholder="usuario" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="login-field"><label class="login-label">Senha</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn-submit" onclick="doLogin()">Entrar</button>
+    <div class="login-err" id="login-err">Usuário ou senha incorretos.</div>
+    <div class="login-lock"><i class="ti ti-lock"></i> Acesso restrito · Ituran</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="shell" id="main-view" style="display:none">
+  <div class="topbar">
+    <div>
+      <h1 id="board-title">PI Board · Ituran</h1>
+      <p id="board-subtitle">Selecione ou crie uma PI</p>
+    </div>
+    <div class="topbar-right">
+      <div id="pi-selector-wrap" style="display:flex;align-items:center;gap:6px">
+        <select id="pi-selector" class="pi-select" onchange="switchActivePi(this.value)" title="PI ativa"></select>
+        <button class="btn-action" id="btn-new-pi" onclick="openPiModal()" style="display:none" title="Criar nova PI"><i class="ti ti-plus"></i> Nova PI</button>
+      </div>
+      <div class="sprint-tabs" id="sprint-tabs"></div>
+      <span id="save-indicator" style="font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:5px;transition:opacity 1s;opacity:0;white-space:nowrap"></span>
+      <div id="user-chip-wrap" style="display:none;align-items:center;gap:6px"></div>
+      <button class="btn-action" id="btn-report" onclick="openReport()"><i class="ti ti-file-analytics"></i> Report</button>
+      <button class="btn-action" onclick="openRoamReport()" style="color:#7B4900;border-color:rgba(255,213,79,.5)"><i class="ti ti-alert-triangle"></i> ROAM</button>
+    </div>
+  </div>
+
+  <div class="metrics" id="metrics-wrap" style="display:none">
+    <div class="mc"><div class="mc-label">Iniciativas</div><div class="mc-val" id="m-i">—</div><div class="mc-sub">no board</div></div>
+    <div class="mc"><div class="mc-label">Features</div><div class="mc-val" id="m-f">—</div><div class="mc-sub">mapeadas</div></div>
+    <div class="mc"><div class="mc-label">User stories</div><div class="mc-val" id="m-s">—</div><div class="mc-sub">total</div></div>
+    <div class="mc"><div class="mc-label">Story points</div><div class="mc-val" id="m-p">—</div><div class="mc-sub">estimados</div></div>
+    <div class="mc"><div class="mc-label">Dependencias</div><div class="mc-val" id="m-d">—</div><div class="mc-sub">cross-squad</div></div>
+  </div>
+
+
+
+  <div class="squads" id="squads-grid"></div>
+
+  <div class="depsec" id="dep-wrap" style="display:none">
+    <div class="dephdr" onclick="toggleEl('dep-body','dep-chev')">
+      <i class="ti ti-arrows-exchange" style="font-size:17px;color:#EF9F27"></i>
+      <h2>Dependency Board — cross-squad</h2>
+      <i class="ti ti-chevron-down chev open" id="dep-chev"></i>
+    </div>
+    <div class="depbody open" id="dep-body"></div>
+  </div>
+</div>
+
+<!-- REPORT -->
+<div class="report-screen" id="report-screen">
+  <div class="report-shell">
+    <div class="report-topbar">
+      <button class="btn-action" onclick="closeReport()"><i class="ti ti-arrow-left"></i> Voltar</button>
+      <h1 id="report-screen-title">Report · Ituran</h1>
+      <button class="btn-action" onclick="downloadReportPDF()" id="btn-download-pdf">
+        <i class="ti ti-file-type-pdf"></i> Download PDF
+      </button>
+      <button class="btn-action" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir</button>
+    </div>
+    <!-- abas de tipo de report (visíveis conforme perfil) -->
+    <div class="report-tabs" id="report-tabs">
+      <button class="report-tab active" onclick="switchReportTab('resumo',this)">
+        <i class="ti ti-table"></i> Resumo por Sprint
+      </button>
+      <button class="report-tab" onclick="switchReportTab('gerencial',this)">
+        <i class="ti ti-report"></i> Report Gerencial
+      </button>
+    </div>
+    <!-- seletor de squad (admin: dropdown; PO: oculto, squad fixo) -->
+    <div class="report-squad-selector" id="report-squad-selector" style="display:none">
+      <label>Squad:</label>
+      <select class="report-squad-sel" id="report-squad-sel" onchange="renderActiveReport()">
+        <option value="all">Todos os squads</option>
+      </select>
+    </div>
+    <div id="report-content"></div>
+  </div>
+</div>
+
+<!-- MODAL NOVA PI -->
+<div class="overlay" id="pi-ov" onclick="closePiModalOut(event)">
+  <div class="modal" style="max-width:560px">
+    <div class="mtitle"><span id="pi-modal-ttl">Nova PI</span><button class="mclose" onclick="closePiModal()">&times;</button></div>
+
+    <div class="fg">
+      <label class="fl">Nome da PI *</label>
+      <input class="fi" id="pi-name" placeholder="Ex: PI Q3 2026"/>
+      <span class="err" id="err-pi-name">Informe o nome da PI</span>
+    </div>
+
+    <div class="fg">
+      <label class="fl">Como vincular as sprints?</label>
+      <div style="display:flex;gap:8px;margin-top:2px">
+        <label class="pi-mode-opt" id="pi-mode-period-lbl">
+          <input type="radio" name="pi-mode" value="period" checked onchange="onPiModeChange()"/>
+          <div><strong>Por período</strong><br><span style="font-size:11px;color:var(--tx2)">busca as sprints do range</span></div>
+        </label>
+        <label class="pi-mode-opt" id="pi-mode-manual-lbl">
+          <input type="radio" name="pi-mode" value="manual" onchange="onPiModeChange()"/>
+          <div><strong>Manual</strong><br><span style="font-size:11px;color:var(--tx2)">escolher sprints na lista</span></div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Modo período -->
+    <div id="pi-period-block">
+      <div style="display:flex;gap:10px">
+        <div class="fg" style="flex:1">
+          <label class="fl">Início do período</label>
+          <input class="fi" id="pi-start" type="date"/>
+        </div>
+        <div class="fg" style="flex:1">
+          <label class="fl">Fim do período</label>
+          <input class="fi" id="pi-end" type="date"/>
+        </div>
+      </div>
+      <button class="btn-action" onclick="fetchSprintsForPeriod()" style="width:100%;justify-content:center">
+        <i class="ti ti-search"></i> Buscar sprints do período
+      </button>
+    </div>
+
+    <!-- Lista de sprints (resultado da busca OU seleção manual) -->
+    <div class="fg" id="pi-sprints-block" style="margin-top:12px">
+      <label class="fl">Sprints da PI <span id="pi-sprints-count" style="color:var(--tx2);font-weight:400"></span></label>
+      <div id="pi-sprints-list" class="pi-sprints-list">
+        <div class="pi-sprints-empty">Defina um período e busque, ou troque para modo manual.</div>
+      </div>
+    </div>
+
+    <div class="mactions">
+      <button class="btn-c" onclick="closePiModal()">Cancelar</button>
+      <button class="btn-s" onclick="savePi()">Criar PI</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROAM REPORT -->
+<div class="roam-report-screen" id="roam-report-screen">
+  <div class="roam-report-shell">
+    <div class="report-topbar">
+      <button class="btn-action" onclick="closeRoamReport()"><i class="ti ti-arrow-left"></i> Voltar</button>
+      <h1>Report ROAM · Ituran</h1>
+      <button class="btn-action" onclick="window.print()"><i class="ti ti-printer"></i> Imprimir / PDF</button>
+    </div>
+    <div class="report-squad-selector" id="roam-squad-selector" style="display:none">
+      <label>Squad:</label>
+      <select class="report-squad-sel" id="roam-squad-sel" onchange="renderRoamReport()">
+        <option value="all">Todos os squads</option>
+      </select>
+    </div>
+    <div id="roam-report-content"></div>
+  </div>
+</div>
+
+<!-- STATUS MENU -->
+<div class="status-menu" id="status-menu">
+  <div class="status-opt" onclick="setStatus('Em Priorizacao')"><span class="status-dot" style="background:#FFD54F"></span>Em Priorizacao</div>
+  <div class="status-opt" onclick="setStatus('Em Refinamento')"><span class="status-dot" style="background:#90CAF9"></span>Em Refinamento</div>
+  <div class="status-opt" onclick="setStatus('Priorizado')"><span class="status-dot" style="background:#81C784"></span>Priorizado</div>
+  <div class="status-opt" onclick="setStatus('Despriorizado')"><span class="status-dot" style="background:#BDBDBD"></span>Despriorizado</div>
+</div>
+
+<!-- MODAL ADD/EDIT INICIATIVA/FEATURE/STORY -->
+<div class="overlay" id="modal-ov" onclick="closeModalOut(event)">
+  <div class="modal">
+    <div class="mtitle"><span id="modal-ttl">Adicionar</span><button class="mclose" onclick="closeModal()">&times;</button></div>
+    <div class="mlevel-tabs" id="mlevel-tabs">
+      <button class="mltab active" onclick="switchLevel('init',this)">Iniciativa</button>
+      <button class="mltab" onclick="switchLevel('feat',this)">Feature</button>
+      <button class="mltab" onclick="switchLevel('story',this)">User Story</button>
+    </div>
+    <div class="msec active" id="tab-init">
+      <div class="fg"><label class="fl">Nome da iniciativa *</label><input class="fi" id="init-title" placeholder="Ex: Pix Automatico"/><span class="err" id="err-it">Informe o nome</span></div>
+      <div class="two">
+        <div class="fg"><label class="fl">Tipo</label>
+          <select class="fi" id="init-badge"><option value="Q3">Q3 Programado</option><option value="Carry">Carry-over</option><option value="Atraso">Em atraso</option><option value="Novo">Novo</option></select>
+        </div>
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fi" id="init-status"><option value="Em Priorizacao">Em Priorizacao</option><option value="Em Refinamento">Em Refinamento</option><option value="Priorizado">Priorizado</option><option value="Despriorizado">Despriorizado</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Descrição (opcional)</label><textarea class="fi fi-ta" id="init-desc" placeholder="Descreva brevemente o objetivo desta iniciativa..." rows="3"></textarea></div>
+    </div>
+    <div class="msec" id="tab-feat">
+      <div class="fg"><label class="fl">Iniciativa *</label><select class="fi" id="feat-init"></select></div>
+      <div class="fg"><label class="fl">Nome da feature *</label><input class="fi" id="feat-title" placeholder="Ex: Tela de pagamento"/><span class="err" id="err-ft">Informe o nome</span></div>
+      <div class="fg"><label class="fl">Descrição (opcional)</label><textarea class="fi fi-ta" id="feat-desc" placeholder="Descreva brevemente o objetivo desta feature..." rows="3"></textarea></div>
+    </div>
+    <div class="msec" id="tab-story">
+      <div class="fg"><label class="fl">Iniciativa *</label><select class="fi" id="story-init" onchange="populateFeatFromInit()"></select></div>
+      <div class="fg"><label class="fl">Feature *</label><select class="fi" id="story-feat"></select></div>
+      <div class="fg"><label class="fl">Titulo da user story *</label><input class="fi" id="story-title" placeholder="Ex: Confirmar pagamento"/><span class="err" id="err-st">Informe o titulo</span></div>
+      <div class="two">
+        <div class="fg"><label class="fl">Story points</label>
+          <select class="fi" id="story-pts"><option>1</option><option>2</option><option>3</option><option>5</option><option selected>8</option><option>13</option><option>21</option></select>
+        </div>
+        <div class="fg"><label class="fl">Sprint</label><select class="fi" id="story-sprint"></select></div>
+      </div>
+      <div class="fg"><label class="fl">Dependencia (opcional)</label>
+        <select class="fi" id="story-dep"><option value="">Nenhuma</option><option>Finance</option><option>Field Service</option><option>Sales</option><option>Customer</option></select>
+      </div>
+      <div class="fg"><label class="fl">Descrição (opcional)</label><textarea class="fi fi-ta" id="story-desc" placeholder="Como usuário, quero... Para que..." rows="3"></textarea></div>
+    </div>
+    <div class="mactions"><button class="btn-c" onclick="closeModal()">Cancelar</button><button class="btn-s" onclick="saveModal()">Salvar</button></div>
+  </div>
+</div>
+
+<!-- MODAL RBO (Risco/Bloqueio/Obs) -->
+<div class="overlay" id="rbo-ov" onclick="closeRboOut(event)">
+  <div class="modal">
+    <div class="mtitle"><span id="rbo-ttl">Adicionar</span><button class="mclose" onclick="closeRbo()">&times;</button></div>
+    <div class="fg"><label class="fl" id="rbo-text-label">Descrição *</label>
+      <textarea class="fi fi-ta" id="rbo-text" placeholder="Descreva aqui..." rows="3"></textarea>
+      <span class="err" id="err-rbo">Informe a descrição</span>
+    </div>
+    <div class="fg" id="rbo-sev-wrap">
+      <label class="fl">Severidade</label>
+      <select class="fi" id="rbo-sev">
+        <option value="alto">Alto</option>
+        <option value="medio" selected>Médio</option>
+        <option value="baixo">Baixo</option>
+      </select>
+    </div>
+    <!-- ROAM — só para riscos -->
+    <div class="fg" id="rbo-roam-wrap">
+      <label class="fl" style="display:flex;align-items:center;gap:6px">
+        Status ROAM
+        <span style="font-size:10px;color:var(--tx2);font-weight:400">— Como este risco está sendo tratado?</span>
+      </label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:2px">
+        <label id="roam-R-lbl" style="display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:var(--r);border:.5px solid #81C784;background:#E8F5E9;cursor:pointer">
+          <input type="radio" name="rbo-roam" value="R" style="accent-color:#1B5E20"/>
+          <span style="font-size:12px;font-weight:700;color:#1B5E20">R</span>
+          <span style="font-size:11px;color:#1B5E20;line-height:1.3"><strong>Resolved</strong><br>Risco resolvido</span>
+        </label>
+        <label id="roam-O-lbl" style="display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:var(--r);border:.5px solid #90CAF9;background:#E3F2FD;cursor:pointer">
+          <input type="radio" name="rbo-roam" value="O" style="accent-color:#0D47A1"/>
+          <span style="font-size:12px;font-weight:700;color:#0D47A1">O</span>
+          <span style="font-size:11px;color:#0D47A1;line-height:1.3"><strong>Owned</strong><br>Assumido por alguém</span>
+        </label>
+        <label id="roam-A-lbl" style="display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:var(--r);border:.5px solid #FFD54F;background:#FFF8E1;cursor:pointer">
+          <input type="radio" name="rbo-roam" value="A" style="accent-color:#7B5800"/>
+          <span style="font-size:12px;font-weight:700;color:#7B5800">A</span>
+          <span style="font-size:11px;color:#7B5800;line-height:1.3"><strong>Accepted</strong><br>Aceito como risco</span>
+        </label>
+        <label id="roam-M-lbl" style="display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:var(--r);border:.5px solid #AFA9EC;background:#EEEDFE;cursor:pointer">
+          <input type="radio" name="rbo-roam" value="M" style="accent-color:#26215C"/>
+          <span style="font-size:12px;font-weight:700;color:#26215C">M</span>
+          <span style="font-size:11px;color:#26215C;line-height:1.3"><strong>Mitigated</strong><br>Mitigado/plano ativo</span>
+        </label>
+      </div>
+      <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:var(--r);border:.5px solid var(--bd2);background:var(--bg2);cursor:pointer;margin-top:6px">
+        <input type="radio" name="rbo-roam" value="" checked style="accent-color:var(--tx2)"/>
+        <span style="font-size:11px;color:var(--tx2)">Não classificado ainda</span>
+      </label>
+    </div>
+    <div class="fg" id="rbo-owner-wrap" style="margin-top:10px">
+      <label class="fl">Owner — responsável pelo risco</label>
+      <input class="fi" id="rbo-owner" placeholder="Nome de quem acompanha este risco..."/>
+    </div>
+    <div class="mactions">
+      <button class="btn-c" onclick="closeRbo()">Cancelar</button>
+      <button class="btn-s" onclick="saveRbo()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="overlay" id="conf-ov" onclick="closeConfOut(event)">
+  <div class="conf-box">
+    <div class="conf-title" id="conf-ttl">Excluir</div>
+    <div class="conf-msg" id="conf-msg"></div>
+    <div class="mactions"><button class="btn-c" onclick="closeConf()">Cancelar</button><button class="btn-d" onclick="doDelete()">Excluir</button></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   SPRINTS
+══════════════════════════════════════════ */
+const SPRINTS=[
+  {id:'SP59',label:'Sprint 59',start:'06/07/2026',end:'17/07/2026'},
+  {id:'SP60',label:'Sprint 60',start:'20/07/2026',end:'31/07/2026'},
+  {id:'SP61',label:'Sprint 61',start:'03/08/2026',end:'14/08/2026'},
+  {id:'SP62',label:'Sprint 62',start:'17/08/2026',end:'28/08/2026'},
+  {id:'SP63',label:'Sprint 63',start:'31/08/2026',end:'11/09/2026'},
+  {id:'SP64',label:'Sprint 64',start:'14/09/2026',end:'25/09/2026'},
+];
+const TYPE_BADGE={
+  'Q3':    {bg:'#E1F5EE',color:'#085041',border:'#5DCAA5'},
+  'Carry': {bg:'#E6F1FB',color:'#042C53',border:'#85B7EB'},
+  'Atraso':{bg:'#FDEEEE',color:'#5C0A0A',border:'#F0A0A0'},
+  'Novo':  {bg:'#EEEDFE',color:'#26215C',border:'#AFA9EC'},
+};
+const STATUS_CFG={
+  'Em Priorizacao':{cls:'sp-priorizando',dot:'#FFD54F',label:'Em Priorizacao'},
+  'Em Refinamento':{cls:'sp-refinamento',dot:'#90CAF9',label:'Em Refinamento'},
+  'Priorizado':    {cls:'sp-priorizado', dot:'#81C784',label:'Priorizado'},
+  'Despriorizado': {cls:'sp-despriorizado',dot:'#BDBDBD',label:'Despriorizado'},
+};
+let SC={
+  SP59:{bg:'#E1F5EE',text:'#085041',border:'#5DCAA5'},
+  SP60:{bg:'#E6F1FB',text:'#042C53',border:'#85B7EB'},
+  SP61:{bg:'#EEEDFE',text:'#26215C',border:'#AFA9EC'},
+  SP62:{bg:'#FFF3E0',text:'#5C2E00',border:'#FFAB40'},
+  SP63:{bg:'#FCE4EC',text:'#5C0020',border:'#F48FB1'},
+  SP64:{bg:'#E8F5E9',text:'#1B5E20',border:'#81C784'},
+};
+
+/* ══════════════════════════════════════════════════════════
+   AZURE DEVOPS — camada de integração (fonte da verdade)
+   ──────────────────────────────────────────────────────────
+   Ligue USE_AZURE=true e configure AZURE_API.base/key para
+   usar o Azure. Com false, o board roda só com Firebase.
+   Todas as chamadas passam pelo backend proxy (nunca o PAT
+   no navegador).
+══════════════════════════════════════════════════════════ */
+const USE_AZURE = false; // ← troque para true quando o backend (pasta api/) estiver no ar
+const AZURE_API = {
+  // Board e backend no MESMO projeto Vercel → caminho relativo, sem CORS.
+  // (Se um dia separar em outro domínio, ponha aqui a URL completa do backend.)
+  base: '',
+  key:  'MESMO-BOARD_SHARED_KEY',   // igual ao BOARD_SHARED_KEY configurado no Vercel
+};
+
+// Mapa: tipo de work item do Azure → nível no board
+const AZ_TYPE_LEVEL = {
+  // 'Iniciativa' é configurável no backend; aqui aceitamos ambos os rótulos de topo
+  'Iniciativa':'initiative', 'Epic':'epic', 'Feature':'feature', 'User Story':'story',
+};
+
+async function azFetch(path, opts={}){
+  const res = await fetch(AZURE_API.base + path, {
+    ...opts,
+    headers: { 'Content-Type':'application/json', 'X-Board-Key':AZURE_API.key, ...(opts.headers||{}) },
+  });
+  if(!res.ok){ throw new Error('Azure proxy '+res.status+': '+await res.text()); }
+  return res.status===204 ? null : res.json();
+}
+
+// ── Sprints do Azure → SPRINTS/SC do board, já separando Q3/Q4 ──
+async function loadAzureSprints(){
+  const data = await azFetch('/api/sprints');
+  const palette = [
+    {bg:'#E1F5EE',text:'#085041',border:'#5DCAA5'},
+    {bg:'#E6F1FB',text:'#042C53',border:'#85B7EB'},
+    {bg:'#EEEDFE',text:'#26215C',border:'#AFA9EC'},
+    {bg:'#FFF3E0',text:'#5C2E00',border:'#FFAB40'},
+    {bg:'#FCE4EC',text:'#5C0020',border:'#F48FB1'},
+    {bg:'#E8F5E9',text:'#1B5E20',border:'#81C784'},
+  ];
+  const q4Palette = {bg:'#ECEFF1',text:'#37474F',border:'#B0BEC5'}; // tom neutro p/ Q4
+  SPRINTS.length = 0; SC = {};
+  (data.sprints||[]).forEach((sp, i) => {
+    const short = sp.name.replace(/[^0-9]/g,'') ? ('SP'+sp.name.replace(/[^0-9]/g,'')) : sp.id;
+    SPRINTS.push({
+      id: short, label: sp.name, quarter: sp.quarter,
+      start: sp.start ? new Date(sp.start).toLocaleDateString('pt-BR') : '',
+      end:   sp.finish ? new Date(sp.finish).toLocaleDateString('pt-BR') : '',
+      iterationPath: sp.path,
+    });
+    SC[short] = sp.quarter==='Q4' ? q4Palette : palette[i % palette.length];
+  });
+}
+
+// ── Comentários (prefixados) → riscos/bloqueios/obs ──
+function parseAzureComment(text){
+  let m;
+  if((m = text.match(/^\[RISCO([^\]]*)\]\s*([\s\S]*)$/i))){
+    const attrs = m[1];
+    const sev  = (attrs.match(/sev=(\w+)/i)||[])[1] || 'medio';
+    const roam = (attrs.match(/roam=([ROAM])/i)||[])[1];
+    const owner= (attrs.match(/owner=([^\s\]]+(?:\s[^\s\]]+)*)/i)||[])[1];
+    return { kind:'risks', text:m[2].trim(), sev:sev.toLowerCase(), roam:roam?roam.toUpperCase():undefined, owner:owner||undefined };
+  }
+  if((m = text.match(/^\[BLOQUEIO([^\]]*)\]\s*([\s\S]*)$/i))){
+    const sev = (m[1].match(/sev=(\w+)/i)||[])[1] || 'alto';
+    return { kind:'blockers', text:m[2].trim(), sev:sev.toLowerCase() };
+  }
+  if((m = text.match(/^\[OBS\]\s*([\s\S]*)$/i))){
+    return { kind:'obs', text:m[1].trim() };
+  }
+  return null; // comentário normal do Azure — ignorado pelo board
+}
+function riskToComment(kind, item){
+  if(kind==='risks'){
+    const parts = [`sev=${item.sev||'medio'}`];
+    if(item.roam)  parts.push(`roam=${item.roam}`);
+    if(item.owner) parts.push(`owner=${item.owner}`);
+    return `[RISCO ${parts.join(' ')}] ${item.text}`;
+  }
+  if(kind==='blockers') return `[BLOQUEIO sev=${item.sev||'alto'}] ${item.text}`;
+  return `[OBS] ${item.text}`;
+}
+
+// ── Monta a árvore Iniciativa→Epic→Feature→Story a partir dos work items ──
+function buildTreeFromAzure(items){
+  const byId = {}; items.forEach(it => byId[it.id] = it);
+  const initiatives = [];
+  const epicsOf={}, featsOf={}, storiesOf={};
+  items.forEach(it => {
+    const lvl = AZ_TYPE_LEVEL[it.type];
+    if(lvl==='epic')    (epicsOf[it.parent]   = epicsOf[it.parent]   || []).push(it);
+    if(lvl==='feature') (featsOf[it.parent]   = featsOf[it.parent]   || []).push(it);
+    if(lvl==='story')   (storiesOf[it.parent] = storiesOf[it.parent] || []).push(it);
+  });
+  const sprintShort = ip => ip ? ('SP'+String(ip).replace(/[^0-9]/g,'')) : (SPRINTS[0]?.id||'SP59');
+  items.filter(it=>AZ_TYPE_LEVEL[it.type]==='initiative').forEach(ini => {
+    initiatives.push({
+      id: 'az'+ini.id, azId: ini.id, title: ini.title, type:'Q3',
+      status: mapState(ini.state), azureState: ini.state, desc: stripHtml(ini.desc),
+      risks:[], blockers:[], obs:[],
+      epics: (epicsOf[ini.id]||[]).map(ep => ({
+        id:'az'+ep.id, azId:ep.id, title:ep.title, desc:stripHtml(ep.desc),
+        features: (featsOf[ep.id]||[]).map(ft => ({
+          id:'az'+ft.id, azId:ft.id, title:ft.title, desc:stripHtml(ft.desc),
+          stories: (storiesOf[ft.id]||[]).map(st => ({
+            id:'az'+st.id, azId:st.id, title:st.title, desc:stripHtml(st.desc),
+            pts: st.storyPoints||0, sprint: sprintShort(st.iteration), dep:null,
+          })),
+        })),
+      })),
+      // compat: features direto na iniciativa não existem mais; ficam sob Epic
+      features:[],
+    });
+  });
+  // Normaliza para a UI: mantém ini.epics estruturado E popula ini.features
+  // (lista achatada com epicId/epicTitle) para compatibilidade com agregações/relatórios.
+  initiatives.forEach(normalizeInitiative);
+  return initiatives;
+}
+
+// Garante que a iniciativa tenha epics[] e uma lista features[] achatada coerente.
+// Funciona tanto para dados do Azure (com epics) quanto para dados legados (só features).
+function normalizeInitiative(ini){
+  if(ini.epics && ini.epics.length){
+    // Azure: achata features dos epics para ini.features, marcando o epic de origem
+    ini.features = [];
+    ini.epics.forEach(ep => {
+      (ep.features||[]).forEach(ft => {
+        ft.epicId = ep.id; ft.epicTitle = ep.title; ft.epicAzId = ep.azId;
+        ini.features.push(ft);
+      });
+    });
+  } else {
+    // Legado (mock/Firebase sem epics): agrupa as features soltas num Epic "Geral"
+    const feats = ini.features || [];
+    if(feats.length){
+      const epic = { id:'epgeral-'+ini.id, azId:null, title:'Geral', desc:'', features:feats };
+      feats.forEach(ft => { ft.epicId = epic.id; ft.epicTitle = 'Geral'; });
+      ini.epics = [epic];
+    } else {
+      ini.epics = [];
+    }
+  }
+  return ini;
+}
+function stripHtml(h){ return h ? String(h).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim() : ''; }
+// Mapeia os estados reais do Azure DevOps (projeto TI) para os 4 status do board.
+// Estados confirmados ao vivo por tipo:
+//   Iniciativa: New, Active, Closed
+//   Epic/Feature: New, Active, Resolved, Closed, Removed
+//   User Story: New, Refinement, Active, Resolved, Ready to Dev, Dev In Progress,
+//               Waiting for publishing, Ready to QA, QA In Progress, Closed, Removed
+// Board: Em Priorizacao · Em Refinamento · Priorizado · Despriorizado
+function mapState(s){
+  const map = {
+    // ainda não priorizado / entrada
+    'New':                    'Em Priorizacao',
+    // em refinamento
+    'Refinement':             'Em Refinamento',
+    // já priorizado e em algum ponto do fluxo de trabalho
+    'Active':                 'Priorizado',
+    'Resolved':               'Priorizado',
+    'Ready to Dev':           'Priorizado',
+    'Dev In Progress':        'Priorizado',
+    'Waiting for publishing': 'Priorizado',
+    'Ready to QA':            'Priorizado',
+    'QA In Progress':         'Priorizado',
+    'Closed':                 'Priorizado',
+    // fora do escopo / removido
+    'Removed':                'Despriorizado',
+  };
+  return map[s] || 'Em Priorizacao';
+}
+
+// Guarda o estado original do Azure (para exibir o detalhe fino quando útil),
+// sem perder o mapeamento para os 4 status do board.
+function azureStateLabel(s){ return s || ''; }
+
+// ── Carrega uma squad inteira do Azure (work items + comentários de risco) ──
+async function loadSquadFromAzure(sqId){
+  const { items } = await azFetch(`/api/squads/${sqId}/workitems`);
+  const initiatives = buildTreeFromAzure(items);
+  // buscar comentários de cada work item para reconstruir riscos/bloqueios/obs
+  await Promise.all(initiatives.map(async ini => {
+    const { comments } = await azFetch(`/api/workitems/${ini.azId}/comment`);
+    (comments||[]).forEach(c => {
+      const p = parseAzureComment(c.text||'');
+      if(!p) return;
+      const item = { id:'c'+c.id, azCommentId:c.id, text:p.text, sev:p.sev, roam:p.roam, owner:p.owner };
+      if(p.kind==='risks') ini.risks.push(item);
+      else if(p.kind==='blockers') ini.blockers.push(item);
+      else ini.obs.push(item);
+    });
+  }));
+  return initiatives;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GESTÃO DE PIs (Program Increments)
+   ──────────────────────────────────────────────────────────
+   - Admin cria PIs (nome + período OU sprints manuais)
+   - Várias PIs coexistem; só uma fica "ativa"
+   - Persistência no Firebase: pi_board/pis/{piId} + pi_board/activePi
+   - Cada PI guarda: id, name, createdAt, sprints[] (id,label,start,end,quarter)
+══════════════════════════════════════════════════════════ */
+const PI_ROOT = 'pi_board';
+let PIS = {};            // { piId: {id,name,createdAt,sprints:[]} }
+let activePiId = null;   // id da PI ativa
+let piModalSprints = []; // sprints carregadas no modal (antes de salvar)
+
+// ── Buscar sprints por período (Azure via backend, ou fallback local) ──
+async function fetchSprintsInRange(startISO, endISO){
+  if(USE_AZURE){
+    // o backend já sabe classificar Q3/Q4; aqui filtramos pelo range pedido
+    const { sprints } = await azFetch('/api/sprints');
+    return (sprints||[])
+      .filter(sp => sp.start && sp.start.slice(0,10) >= startISO && sp.start.slice(0,10) <= endISO)
+      .map(sp => ({ id:'SP'+String(sp.name).replace(/[^0-9]/g,''), label:sp.name,
+        start: sp.start? new Date(sp.start).toLocaleDateString('pt-BR'):'',
+        end:   sp.finish? new Date(sp.finish).toLocaleDateString('pt-BR'):'',
+        startISO: sp.start? sp.start.slice(0,10):'', quarter: sp.quarter,
+        iterationPath: sp.path }));
+  }
+  // Fallback local (sem Azure): usa as sprints-base do board como catálogo demo
+  const cat = BASE_SPRINT_CATALOG.filter(sp => sp.startISO >= startISO && sp.startISO <= endISO);
+  return cat.map(sp => ({...sp}));
+}
+
+// Catálogo demo (usado só quando USE_AZURE=false) — espelha as sprints reais 2026
+const BASE_SPRINT_CATALOG = [
+  {id:'SP59',label:'Sprint 59',start:'06/07/2026',end:'17/07/2026',startISO:'2026-07-06'},
+  {id:'SP60',label:'Sprint 60',start:'20/07/2026',end:'31/07/2026',startISO:'2026-07-20'},
+  {id:'SP61',label:'Sprint 61',start:'03/08/2026',end:'14/08/2026',startISO:'2026-08-03'},
+  {id:'SP62',label:'Sprint 62',start:'17/08/2026',end:'28/08/2026',startISO:'2026-08-17'},
+  {id:'SP63',label:'Sprint 63',start:'31/08/2026',end:'11/09/2026',startISO:'2026-08-31'},
+  {id:'SP64',label:'Sprint 64',start:'14/09/2026',end:'25/09/2026',startISO:'2026-09-14'},
+  {id:'SP65',label:'Sprint 65',start:'28/09/2026',end:'09/10/2026',startISO:'2026-09-28'},
+  {id:'SP66',label:'Sprint 66',start:'12/10/2026',end:'23/10/2026',startISO:'2026-10-12'},
+  {id:'SP67',label:'Sprint 67',start:'26/10/2026',end:'06/11/2026',startISO:'2026-10-26'},
+].map(sp => ({...sp, quarter: new Date(sp.startISO).getUTCMonth()>=9?'Q4':'Q3'}));
+
+// ── Modal ──
+function openPiModal(){
+  if(!currentUser?.isAdmin) return;
+  document.getElementById('pi-name').value='';
+  document.getElementById('pi-start').value='';
+  document.getElementById('pi-end').value='';
+  document.getElementById('err-pi-name').style.display='none';
+  piModalSprints=[];
+  document.querySelector('input[name="pi-mode"][value="period"]').checked=true;
+  onPiModeChange();
+  renderPiSprintList();
+  document.getElementById('pi-ov').classList.add('open');
+}
+function closePiModal(){ document.getElementById('pi-ov').classList.remove('open'); }
+function closePiModalOut(e){ if(e.target.id==='pi-ov') closePiModal(); }
+
+function onPiModeChange(){
+  const mode = document.querySelector('input[name="pi-mode"]:checked').value;
+  document.getElementById('pi-period-block').style.display = mode==='period'?'block':'none';
+  if(mode==='manual'){
+    // no modo manual, lista todas as sprints do catálogo/Azure para marcar
+    loadAllSprintsForManual();
+  }
+}
+
+async function loadAllSprintsForManual(){
+  let all;
+  if(USE_AZURE){
+    const { sprints } = await azFetch('/api/sprints');
+    all = (sprints||[]).map(sp => ({ id:'SP'+String(sp.name).replace(/[^0-9]/g,''), label:sp.name,
+      start: sp.start?new Date(sp.start).toLocaleDateString('pt-BR'):'',
+      end: sp.finish?new Date(sp.finish).toLocaleDateString('pt-BR'):'',
+      startISO: sp.start?sp.start.slice(0,10):'', quarter: sp.quarter, iterationPath: sp.path }));
+  } else {
+    all = BASE_SPRINT_CATALOG.map(sp=>({...sp}));
+  }
+  // preserva as já marcadas
+  const marked = new Set(piModalSprints.map(s=>s.id));
+  piModalSprints = all.map(sp => ({...sp, _checked: marked.has(sp.id)}));
+  renderPiSprintList(true);
+}
+
+async function fetchSprintsForPeriod(){
+  const start=document.getElementById('pi-start').value;
+  const end=document.getElementById('pi-end').value;
+  if(!start||!end){ alert('Informe início e fim do período.'); return; }
+  const listEl=document.getElementById('pi-sprints-list');
+  listEl.innerHTML='<div class="pi-sprints-empty">Buscando sprints…</div>';
+  try{
+    const found=await fetchSprintsInRange(start,end);
+    piModalSprints=found.map(sp=>({...sp,_checked:true}));
+    renderPiSprintList(true);
+  }catch(e){
+    console.error('[PI] busca de sprints falhou:',e);
+    listEl.innerHTML='<div class="pi-sprints-empty">Erro ao buscar sprints. Verifique o backend/Azure.</div>';
+  }
+}
+
+function renderPiSprintList(selectable){
+  const el=document.getElementById('pi-sprints-list');
+  const cnt=document.getElementById('pi-sprints-count');
+  if(!piModalSprints.length){
+    el.innerHTML='<div class="pi-sprints-empty">Nenhuma sprint carregada ainda.</div>';
+    cnt.textContent='';
+    return;
+  }
+  const checkedN=piModalSprints.filter(s=>s._checked!==false).length;
+  cnt.textContent=`(${checkedN} selecionada${checkedN!==1?'s':''})`;
+  el.innerHTML=piModalSprints.map((sp,i)=>`
+    <label class="pi-sprint-row">
+      <input type="checkbox" ${sp._checked!==false?'checked':''} onchange="togglePiSprint(${i},this.checked)"/>
+      <span class="pi-sprint-name">${sp.label}</span>
+      <span class="pi-sprint-q ${sp.quarter==='Q4'?'pi-q4':'pi-q3'}">${sp.quarter||'Q3'}</span>
+      <span class="pi-sprint-dates">${sp.start} – ${sp.end}</span>
+    </label>`).join('');
+}
+function togglePiSprint(i,checked){
+  if(piModalSprints[i]) piModalSprints[i]._checked=checked;
+  const checkedN=piModalSprints.filter(s=>s._checked!==false).length;
+  document.getElementById('pi-sprints-count').textContent=`(${checkedN} selecionada${checkedN!==1?'s':''})`;
+}
+
+async function savePi(){
+  const name=document.getElementById('pi-name').value.trim();
+  if(!name){ document.getElementById('err-pi-name').style.display='block'; return; }
+  const chosen=piModalSprints.filter(s=>s._checked!==false)
+    .map(({_checked,...sp})=>sp);
+  if(!chosen.length){ alert('Selecione ao menos uma sprint para a PI.'); return; }
+
+  const id='pi_'+Date.now().toString(36);
+  const pi={ id, name, createdAt:new Date().toISOString(), sprints:chosen };
+  PIS[id]=pi;
+  activePiId=id;
+  await persistPis();
+  applyActivePi();
+  closePiModal();
+  renderPiSelector();
+  renderAll();
+}
+
+// ── Persistência ──
+async function persistPis(){
+  if(!fbDb) return;
+  try{
+    await fbDb.ref(`${PI_ROOT}/pis`).set(PIS);
+    await fbDb.ref(`${PI_ROOT}/activePi`).set(activePiId);
+  }catch(e){ console.error('[PI] persist falhou:',e); }
+}
+async function loadPis(){
+  if(!fbDb) return;
+  try{
+    const [pisSnap,actSnap]=await Promise.all([
+      fbDb.ref(`${PI_ROOT}/pis`).once('value'),
+      fbDb.ref(`${PI_ROOT}/activePi`).once('value'),
+    ]);
+    PIS=pisSnap.val()||{};
+    activePiId=actSnap.val()||null;
+    // se não há PI ativa mas existe alguma, ativa a mais recente
+    if(!activePiId && Object.keys(PIS).length){
+      activePiId=Object.values(PIS).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''))[0].id;
+    }
+  }catch(e){ console.error('[PI] load falhou:',e); }
+}
+
+// ── Aplicar a PI ativa: popula SPRINTS/SC e cabeçalho ──
+function applyActivePi(){
+  const pi=PIS[activePiId];
+  if(!pi){ return; }
+  SPRINTS.length=0;
+  const palette=[
+    {bg:'#E1F5EE',text:'#085041',border:'#5DCAA5'},
+    {bg:'#E6F1FB',text:'#042C53',border:'#85B7EB'},
+    {bg:'#EEEDFE',text:'#26215C',border:'#AFA9EC'},
+    {bg:'#FFF3E0',text:'#5C2E00',border:'#FFAB40'},
+    {bg:'#FCE4EC',text:'#5C0020',border:'#F48FB1'},
+    {bg:'#E8F5E9',text:'#1B5E20',border:'#81C784'},
+  ];
+  const q4Pal={bg:'#ECEFF1',text:'#37474F',border:'#B0BEC5'};
+  Object.keys(SC).forEach(k=>delete SC[k]);
+  pi.sprints.forEach((sp,i)=>{
+    SPRINTS.push({ id:sp.id, label:sp.label, start:sp.start, end:sp.end, quarter:sp.quarter, iterationPath:sp.iterationPath });
+    SC[sp.id]= sp.quarter==='Q4'? q4Pal : palette[i%palette.length];
+  });
+  // cabeçalho dinâmico
+  const q3=pi.sprints.filter(s=>s.quarter!=='Q4').length;
+  const q4=pi.sprints.filter(s=>s.quarter==='Q4').length;
+  const first=pi.sprints[0], last=pi.sprints[pi.sprints.length-1];
+  const t=document.getElementById('board-title'); if(t) t.textContent=`${pi.name} · Ituran`;
+  const sub=document.getElementById('board-subtitle');
+  if(sub) sub.textContent=`${SQUADS.length} squads · ${pi.sprints.length} sprints${q4?` (${q3} Q3 · ${q4} Q4)`:''}`+
+    (first&&last?` · ${first.start} a ${last.end}`:'');
+  const rt=document.getElementById('report-screen-title'); if(rt) rt.textContent=`Report — ${pi.name} · Ituran`;
+  if(typeof buildSprintTabs==='function') buildSprintTabs();
+}
+
+// ── Seletor de PI no topo ──
+function renderPiSelector(){
+  const sel=document.getElementById('pi-selector');
+  const btn=document.getElementById('btn-new-pi');
+  if(btn) btn.style.display = currentUser?.isAdmin ? 'flex' : 'none';
+  if(!sel) return;
+  const pis=Object.values(PIS).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  if(!pis.length){
+    sel.innerHTML='<option value="">— nenhuma PI —</option>';
+    return;
+  }
+  sel.innerHTML=pis.map(pi=>`<option value="${pi.id}" ${pi.id===activePiId?'selected':''}>${pi.name}</option>`).join('');
+}
+async function switchActivePi(piId){
+  if(!piId||!PIS[piId]) return;
+  activePiId=piId;
+  if(currentUser?.isAdmin) await persistPis();
+  applyActivePi();
+  renderAll();
+}
+
+const SQUADS=[
+  {id:'finance',name:'Finance',icon:'ti-report-money',iconColor:'#1D9E75',iconBg:'#E1F5EE',velocity:34,sprints:6,
+   initiatives:[
+    {id:'g601',title:'SQL - Postgre',   type:'Q3',   status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+    {id:'g602',title:'ERP - Melhorias', type:'Carry',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+    {id:'g603',title:'Pricing Ajustes', type:'Carry',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+  ]},
+  {id:'fieldservice',name:'Field Service',icon:'ti-tool',iconColor:'#378ADD',iconBg:'#E6F1FB',velocity:25,sprints:6,
+   initiatives:[
+    {id:'g604',title:'Refactor Técnica',type:'Q3',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+    {id:'g605',title:'Melhoria Preditivo',type:'Carry',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[
+      {id:'g606',title:'Feature Default',stories:[
+        {id:'x308',title:'Alterar as Regras que estão na População P_POP_RequestMaintanace2',pts:8,sprint:'SP59',dep:undefined},
+        {id:'x309',title:'Incluir envio de HSM (Whatzapp) nas campanhas do Preditivo',pts:8,sprint:'SP59',dep:undefined},
+      ]},
+    ]},
+    {id:'g607',title:'Ituran Suite - Portal Concessionária',type:'Carry',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+    {id:'g608',title:'Ajuste API TOKIO - Fluxo de Prorrogação da Data Limite',type:'Carry',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+  ]},
+  {id:'sales',name:'Sales',icon:'ti-trending-up',iconColor:'#D85A30',iconBg:'#FAECE7',velocity:30,sprints:6,
+   initiatives:[
+    {id:'g609',title:'SQL - PostGree',type:'Q3',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+    {id:'g610',title:'Carbonus - Incremento - 2Fase',type:'Carry',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+    {id:'g611',title:'Adicional com Apólice - APP Motorista',type:'Carry',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+    {id:'g612',title:'Melhoria Jornadas E-Commerce',type:'Carry',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+  ]},
+  {id:'customer',name:'Customer',icon:'ti-users',iconColor:'#7F77DD',iconBg:'#EEEDFE',velocity:24,sprints:6,
+   initiatives:[
+    {id:'g613',title:'SQL - Postgree',type:'Q3',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+    {id:'g614',title:'Rebranding da Home do APP',type:'Carry',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+    {id:'g615',title:'Ituran Shield',type:'Carry',status:'Em Priorizacao',risks:[],blockers:[],obs:[],features:[]},
+  ]},
+];
+
+/* ══════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════ */
+const CREDENTIALS={
+  '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918':{squad:null,passHash:'2086a63203a40c85a3ab259f9827b7d36b84f890b9dd372fa827997b05c85a0c',name:'admin',isAdmin:true},
+  'e6e19f94b981905780e73414f1ef113793618d493aae16b9dbb96d036160cf33':{squad:'finance',passHash:'fc0548c234724ef634d91fec2beafb83a3364fdcb7db9e29fc63f464f0628935',name:'lgasparoto',isAdmin:false},
+  '5cbb5ea9eb64266858cbe22ce24c592e3fdd546e543ba8e2d9f273366fc5d35f':{squad:'fieldservice',passHash:'cf73f1c74e41c44bd38f1b8ba6cf3d581b89b83b9a03563504c1d5173535a743',name:'gstefanelli',isAdmin:false},
+  '4679d53e64c1e8325cf2244058b19067860bec34dc9e4fe43a46877f1e104267':{squad:'sales',passHash:'deae639b98ab2017df8d320b386a86e0f5b60b9be23f0cdff106318c4cba2ca8',name:'wsantos',isAdmin:false},
+  'faa871455c5493ae68f0f0a2e8ed8dcd5735b924de61804d597d91247db9036d':{squad:'customer',passHash:'38f0271ce412553c7e7d03022e4271c974fc63814c4fdea8189f379c93d19879',name:'rlopes',isAdmin:false},
+};
+const SESSION_KEY='pi_ituran_session';
+const SESSION_TTL=8*60*60*1000;
+let currentUser=null; // {name, squad, isAdmin}
+
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function doLogin(){
+  const user=document.getElementById('login-user').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-err');
+  err.classList.remove('show');
+  if(!user||!pass){err.innerHTML='Preencha usuario e senha.';err.classList.add('show');return;}
+  const uH=await sha256(user), pH=await sha256(pass);
+  const cred=CREDENTIALS[uH];
+  if(cred&&cred.passHash===pH){
+    currentUser={name:cred.name,squad:cred.squad,isAdmin:cred.isAdmin};
+    sessionStorage.setItem(SESSION_KEY,JSON.stringify({...currentUser,expires:Date.now()+SESSION_TTL}));
+    enterApp();
+  }else{
+    err.innerHTML='Usuario ou senha incorretos.';err.classList.add('show');
+    document.getElementById('login-pass').value='';
+    document.getElementById('login-pass').focus();
+  }
+}
+function checkSession(){
+  try{
+    const raw=sessionStorage.getItem(SESSION_KEY);if(!raw)return false;
+    const s=JSON.parse(raw);
+    if(Date.now()>s.expires){sessionStorage.removeItem(SESSION_KEY);return false;}
+    currentUser={name:s.name,squad:s.squad,isAdmin:s.isAdmin};
+    return true;
+  }catch(e){return false;}
+}
+function logout(){
+  if(!confirm('Deseja encerrar a sessao?'))return;
+  sessionStorage.removeItem(SESSION_KEY);location.reload();
+}
+function canEdit(sqId){return currentUser&&(currentUser.isAdmin||currentUser.squad===sqId);}
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let activeSprint='all', uid=700;
+let curSqId=null, curLevel='init', isEdit=false;
+let editIId=null, editFId=null, editSId=null, delFn=null;
+let statusTargetSqId=null, statusTargetIId=null;
+// RBO state
+let rboSqId=null, rboIId=null, rboType=null, rboEditId=null;
+const newId=()=>'n'+(++uid);
+const spOk=s=>activeSprint==='all'||s===activeSprint;
+
+/* ══════════════════════════════════════════
+   ENTER APP
+══════════════════════════════════════════ */
+function enterApp(){
+  document.getElementById('login-screen').classList.remove('visible');
+  document.getElementById('main-view').style.display='';
+  renderUserChip();
+  if(currentUser.isAdmin){
+    document.getElementById('metrics-wrap').style.display='';
+
+    document.getElementById('dep-wrap').style.display='';
+  }
+  buildSprintTabs();
+  SQUADS.forEach(sq => (sq.initiatives||[]).forEach(normalizeInitiative)); // garante epics[] mesmo no mock
+  renderPiSelector();
+  renderAll();
+  loadData().then(ok=>{
+    // após conectar ao Firebase, carrega as PIs e aplica a ativa
+    loadPis().then(()=>{
+      ensureDefaultPi();
+      applyActivePi();
+      renderPiSelector();
+      renderAll();
+      showSaveIndicator('saved');
+    });
+  });
+  startPolling();
+}
+// Se não existe nenhuma PI ainda, cria uma padrão a partir das sprints-base (primeiro uso)
+function ensureDefaultPi(){
+  if(Object.keys(PIS).length) return;
+  const sprints = (USE_AZURE ? [] : BASE_SPRINT_CATALOG.slice(0,6)).map(({_checked,...sp})=>sp);
+  if(!sprints.length && SPRINTS.length){
+    // deriva do que estiver em SPRINTS
+    SPRINTS.forEach(sp=>sprints.push({id:sp.id,label:sp.label,start:sp.start,end:sp.end,quarter:sp.quarter||'Q3'}));
+  }
+  const id='pi_default';
+  PIS[id]={ id, name:'PI Q3 2026', createdAt:new Date().toISOString(), sprints };
+  activePiId=id;
+  if(currentUser?.isAdmin) persistPis();
+}
+function renderUserChip(){
+  const wrap=document.getElementById('user-chip-wrap');if(!wrap)return;
+  const squadName=currentUser.isAdmin?'Admin':(SQUADS.find(s=>s.id===currentUser.squad)?.name||currentUser.squad);
+  wrap.style.display='flex';
+  wrap.innerHTML=`<div class="user-chip">
+    <i class="ti ti-user-circle"></i>
+    <span class="user-chip-name">${currentUser.name}</span>
+    <span class="user-chip-squad">${squadName}</span>
+  </div>
+  <button class="logout-btn" onclick="logout()" title="Sair"><i class="ti ti-logout"></i></button>`;
+}
+
+/* ══════════════════════════════════════════
+   SPRINT TABS
+══════════════════════════════════════════ */
+function buildSprintTabs(){
+  const c=document.getElementById('sprint-tabs');
+  c.innerHTML=`<button class="stab active" onclick="filterSprint('all',this)">Todos</button>`+
+    SPRINTS.map(sp=>`<button class="stab" onclick="filterSprint('${sp.id}',this)">${sp.label}<span class="stab-date">${sp.start} – ${sp.end}</span></button>`).join('');
+}
+function filterSprint(s,btn){
+  activeSprint=s;
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+function toggleEl(id,chevId){
+  document.getElementById(id).classList.toggle('open');
+  document.getElementById(chevId).classList.toggle('open');
+}
+
+/* ══════════════════════════════════════════
+   VELOCITY
+══════════════════════════════════════════ */
+function renderVelocity(){} // removido: velocity agora inline no header do squad
+function updVel(sqId,val){
+  if(!canEdit(sqId))return;
+  const sq=SQUADS.find(s=>s.id===sqId),n=parseInt(val);
+  if(sq&&!isNaN(n)&&n>0){sq.velocity=n;renderSquads();scheduleSave();}
+}
+
+/* ══════════════════════════════════════════
+   RENDER BOARD
+══════════════════════════════════════════ */
+function renderAll(){
+  renderSquads();
+  if(currentUser&&currentUser.isAdmin) renderDeps();
+}
+
+function renderSquads(){
+  const g=document.getElementById('squads-grid');
+  let tI=0,tF=0,tS=0,tP=0,tD=0;
+
+  // ── Ordenação por perfil ──
+  // PO: própria squad primeiro, depois as demais ordenadas alfabeticamente
+  // Admin: ordem alfabética
+  let squadsToShow;
+  if(currentUser.isAdmin){
+    squadsToShow = [...SQUADS].sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+  } else {
+    const own  = SQUADS.filter(s=>s.id===currentUser.squad);
+    const rest = SQUADS.filter(s=>s.id!==currentUser.squad).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+    squadsToShow = [...own, ...rest];
+  }
+
+  // Manter estado de expansão entre re-renders
+  const expanded = {};
+  g.querySelectorAll('.sc').forEach(el=>{
+    if(el.dataset.sqid) expanded[el.dataset.sqid] = el.classList.contains('expanded');
+  });
+
+  g.innerHTML='';
+
+  squadsToShow.forEach((sq,idx)=>{
+    const editable  = canEdit(sq.id);
+    const isOwn     = !currentUser.isAdmin && sq.id===currentUser.squad;
+    const accentCol = {'finance':'#1D9E75','fieldservice':'#378ADD','sales':'#D85A30','customer':'#7F77DD'}[sq.id]||'#378ADD';
+
+    // Expandir: própria squad sempre aberta; admin → primeira da lista; demais fechadas por padrão
+    const shouldExpand = expanded[sq.id] !== undefined
+      ? expanded[sq.id]
+      : (isOwn || (currentUser.isAdmin && idx===0));
+
+    const allPts=sq.initiatives.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.reduce((c,s)=>c+s.pts,0),0),0);
+    const cap=sq.velocity*6;
+    const capPct=cap>0?Math.min(150,Math.round(allPts/cap*100)):0;
+    const capCol=capPct>110?'#E24B4A':capPct>90?'#EF9F27':'#1D9E75';
+
+    const visI=sq.initiatives.map(i=>({
+      ...i,
+      features:i.features.map(f=>({...f,stories:f.stories.filter(s=>spOk(s.sprint))}))
+                          .filter(f=>activeSprint==='all'||f.stories.length>0)
+    })).filter(i=>activeSprint==='all'||i.features.length>0);
+
+    const vPts=visI.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.reduce((c,s)=>c+s.pts,0),0),0);
+    const vS=visI.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.length,0),0);
+    const vF=visI.reduce((a,i)=>a+i.features.length,0);
+    const vD=visI.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.filter(s=>s.dep).length,0),0);
+    tI+=visI.length;tF+=vF;tS+=vS;tP+=vPts;tD+=vD;
+
+    const card=document.createElement('div');
+    card.dataset.sqid = sq.id;
+    card.className = 'sc'
+      + (editable ? '' : ' locked')
+      + (shouldExpand ? ' expanded' : '')
+      + (isOwn ? ' own-squad' : '');
+    card.style.setProperty('--squad-accent', accentCol);
+
+    // ── Iniciativas HTML ──
+    const initiativesHTML = visI.length===0
+      ? '<div class="empty">Nenhum item neste sprint</div>'
+      : visI.map(ini=>{
+          const tb=TYPE_BADGE[ini.type]||TYPE_BADGE['Novo'];
+          const sc=STATUS_CFG[ini.status]||STATUS_CFG['Em Priorizacao'];
+          const iPts=ini.features.reduce((a,f)=>a+f.stories.reduce((b,s)=>b+s.pts,0),0);
+          const rCount=(ini.risks||[]).length+(ini.blockers||[]).length+(ini.obs||[]).length;
+          const rCountBadge=rCount>0?`<span style="font-size:10px;color:var(--tx2);margin-left:4px">${rCount} nota${rCount>1?'s':''}</span>`:'';
+
+          // renderiza uma feature (com suas stories) — reutilizado dentro de cada Epic
+          const renderFeature=(feat)=>{
+            const fPts=feat.stories.reduce((a,s)=>a+s.pts,0);
+            return `<div class="fblock">
+              <div class="fhdr">
+                <div class="ftoggle" onclick="togF('${feat.id}')">
+                  <span class="fbadge" style="background:${tb.color}"></span>
+                  <span class="ftitle" title="${feat.title}">${feat.title}</span>
+                  <span class="fpts">${fPts}pt</span>
+                  ${feat.desc?`<button class="desc-toggle" onclick="event.stopPropagation();togDesc('fdesc-${feat.id}')" title="Ver descrição"><i class="ti ti-info-circle"></i></button>`:''}
+                  <i class="ti ti-chevron-down chev open" id="fchev-${feat.id}" style="font-size:12px"></i>
+                </div>
+                <div class="faction">
+                  <button class="ib" title="Editar" onclick="openEditF('${sq.id}','${ini.id}','${feat.id}')" ${editable?'':'disabled'}><i class="ti ti-pencil"></i></button>
+                  <button class="ib del" title="Excluir" onclick="askDelF('${sq.id}','${ini.id}','${feat.id}','${esc(feat.title)}')" ${editable?'':'disabled'}><i class="ti ti-trash"></i></button>
+                </div>
+              </div>
+              ${feat.desc?`<div class="desc-text" id="fdesc-${feat.id}" style="display:none">${feat.desc}</div>`:''}
+              <div class="slist open" id="slist-${feat.id}">
+                ${feat.stories.map(s=>{
+                  const sp=SC[s.sprint]||Object.values(SC)[0]||{bg:'#eee',text:'#333',border:'#ccc'};
+                  return `<div class="srow" style="align-items:flex-start">
+                    <i class="ti ti-point-filled sdot" style="margin-top:3px"></i>
+                    <div style="flex:1;min-width:0">
+                      <div class="stitle" style="flex:none">${s.title}${s.dep?`<span class="dep"><i class="ti ti-arrow-right" style="font-size:8px"></i>${s.dep}</span>`:''}</div>
+                      ${s.desc?`<div style="font-size:10px;color:var(--tx2);margin-top:2px;line-height:1.4;padding-right:4px">${s.desc}</div>`:''}
+                    </div>
+                    <span class="spts" style="margin-top:2px">${s.pts}pt</span>
+                    <span class="ssprint" style="background:${sp.bg};color:${sp.text};border:.5px solid ${sp.border}">${s.sprint}</span>
+                    <div class="faction">
+                      <button class="ib" title="Editar" onclick="openEditS('${sq.id}','${ini.id}','${feat.id}','${s.id}')" ${editable?'':'disabled'}><i class="ti ti-pencil"></i></button>
+                      <button class="ib del" title="Excluir" onclick="askDelS('${sq.id}','${ini.id}','${feat.id}','${s.id}','${esc(s.title)}')" ${editable?'':'disabled'}><i class="ti ti-trash"></i></button>
+                    </div>
+                  </div>`;
+                }).join('')}
+              </div>
+            </div>`;
+          };
+
+          // agrupa as features por Epic (ini.epics já normalizado)
+          const epics = ini.epics && ini.epics.length
+            ? ini.epics
+            : [{ id:'epgeral-'+ini.id, title:'Geral', features: ini.features }];
+          const featuresHTML = epics.map(ep => {
+            const epFeats = ep.features || [];
+            const epPts = epFeats.reduce((a,f)=>a+f.stories.reduce((b,s)=>b+s.pts,0),0);
+            const epStories = epFeats.reduce((a,f)=>a+f.stories.length,0);
+            return `<div class="epblock">
+              <div class="ephdr" onclick="togEp('${ep.id}')">
+                <span class="epbadge"><i class="ti ti-stack-2" style="font-size:10px"></i>Epic</span>
+                <span class="eptitle" title="${ep.title}">${ep.title}</span>
+                <span class="eppts">${epFeats.length} feat · ${epStories} st · ${epPts}pt</span>
+                <i class="ti ti-chevron-down chev open" id="epchev-${ep.id}" style="font-size:12px"></i>
+              </div>
+              <div class="epfeats open" id="epfeats-${ep.id}">
+                ${epFeats.map(renderFeature).join('')}
+              </div>
+            </div>`;
+          }).join('');
+
+          // RBO
+          const allRbo=[
+            ...(ini.risks||[]).map(x=>({...x,type:'risks'})),
+            ...(ini.blockers||[]).map(x=>({...x,type:'blockers'})),
+            ...(ini.obs||[]).map(x=>({...x,type:'obs'})),
+          ];
+          const rCnt=(ini.risks||[]).length;
+          const bCnt=(ini.blockers||[]).length;
+          const oCnt=(ini.obs||[]).length;
+
+          return `<div class="iblock" draggable="${editable}" data-sqid="${sq.id}" data-iid="${ini.id}"
+            ${editable?'onDragStart="onDragStart(event)" onDragOver="onDragOver(event)" onDragLeave="onDragLeave(event)" onDrop="onDrop(event)" onDragEnd="onDragEnd(event)"':''}>
+            <div class="ihdr">
+              <i class="ti ti-grip-vertical drag-handle${editable?'':' disabled'}"></i>
+              <div class="itoggle" onclick="togI('${ini.id}')">
+                <span class="itype-badge" style="background:${tb.bg};color:${tb.color};border:.5px solid ${tb.border}">${ini.type}</span>
+                <span class="ititle" title="${ini.title}">${ini.title}</span>
+                <span class="ipts">${iPts}pt</span>
+                ${ini.desc?`<button class="desc-toggle" onclick="event.stopPropagation();togDesc('idesc-${ini.id}')" title="Ver descrição"><i class="ti ti-info-circle"></i></button>`:''}
+                ${rCountBadge}
+                <i class="ti ti-chevron-down chev open" id="chev-${ini.id}"></i>
+              </div>
+              <span class="status-pill ${sc.cls}${editable?'':' disabled'}"
+                onclick="${editable?`openStatusMenu(event,'${sq.id}','${ini.id}')`:''}">${sc.label}</span>
+              <div class="iactions">
+                <button class="ib" title="Editar" onclick="openEditI('${sq.id}','${ini.id}')" ${editable?'':'disabled'}><i class="ti ti-pencil"></i></button>
+                <button class="ib del" title="Excluir" onclick="askDelI('${sq.id}','${ini.id}','${esc(ini.title)}')" ${editable?'':'disabled'}><i class="ti ti-trash"></i></button>
+              </div>
+            </div>
+            ${ini.desc?`<div class="desc-text" id="idesc-${ini.id}" style="display:none">${ini.desc}</div>`:''}
+            <div class="flist-inner open" id="flist-${ini.id}">${featuresHTML}</div>
+            <div class="rbo-bar">
+              <button class="rbo-trigger risks" onclick="toggleRboPanel('${ini.id}')" ${editable?'':'disabled'}>
+                <i class="ti ti-alert-triangle" style="font-size:12px"></i>Riscos${rCnt>0?' ('+rCnt+')':''}
+              </button>
+              <button class="rbo-trigger blockers" onclick="toggleRboPanel('${ini.id}','blockers')" ${editable?'':'disabled'}>
+                <i class="ti ti-forbid-2" style="font-size:12px"></i>Bloqueios${bCnt>0?' ('+bCnt+')':''}
+              </button>
+              <button class="rbo-trigger obs" onclick="toggleRboPanel('${ini.id}','obs')" ${editable?'':'disabled'}>
+                <i class="ti ti-notes" style="font-size:12px"></i>Obs${oCnt>0?' ('+oCnt+')':''}
+              </button>
+            </div>
+            <div class="rbo-panel" id="rbo-panel-${ini.id}">
+              <div class="rbo-panel-hdr">
+                <span class="rbo-panel-title" id="rbo-panel-title-${ini.id}">Notas</span>
+                <button class="rbo-panel-close" onclick="closeRboPanel('${ini.id}')">&times;</button>
+              </div>
+              <div id="rbo-panel-body-${ini.id}">
+                ${allRbo.length===0
+                  ? '<div class="rbo-empty">Nenhum item cadastrado.</div>'
+                  : `<div class="rbo-list">${allRbo.map(item=>{
+                      const typeLabel=item.type==='risks'?'Risco':item.type==='blockers'?'Bloqueio':'Obs';
+                      const typeChip=item.type==='risks'?'chip-risks':item.type==='blockers'?'chip-blockers':'chip-obs';
+                      const roamCfg=item.type==='risks'&&item.roam?ROAM_CFG[item.roam]:null;
+                      return `<div class="rbo-item type-${item.type}">
+                        <div class="rbo-item-left">
+                          <div class="rbo-item-text">${item.text}</div>
+                          <div class="rbo-item-badges">
+                            <span class="rbo-type-chip ${typeChip}">${typeLabel}</span>
+                            ${item.sev?`<span class="rbo-sev sev-${item.sev}">${item.sev.charAt(0).toUpperCase()+item.sev.slice(1)}</span>`:''}
+                            ${roamCfg?`<span class="roam-badge ${roamCfg.cls}" style="cursor:default">${roamCfg.label}</span>`:''}
+                            ${item.owner?`<span class="roam-owner"><i class="ti ti-user" style="font-size:9px"></i>${item.owner}</span>`:''}
+                          </div>
+                        </div>
+                        <button class="ib" onclick="openEditRbo('${sq.id}','${ini.id}','${item.type}','${item.id}')" ${editable?'':'disabled'}><i class="ti ti-pencil"></i></button>
+                        <button class="ib del" onclick="askDelRbo('${sq.id}','${ini.id}','${item.type}','${item.id}')" ${editable?'':'disabled'}><i class="ti ti-trash"></i></button>
+                      </div>`;
+                    }).join('')}</div>`
+                }
+                <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+                  <button class="rbo-add-btn" style="flex:1;min-width:120px" onclick="openAddRbo('${sq.id}','${ini.id}','risks')" ${editable?'':'disabled'}><i class="ti ti-plus"></i>Adicionar risco</button>
+                  <button class="rbo-add-btn" style="flex:1;min-width:120px" onclick="openAddRbo('${sq.id}','${ini.id}','blockers')" ${editable?'':'disabled'}><i class="ti ti-plus"></i>Adicionar bloqueio</button>
+                  <button class="rbo-add-btn" style="flex:1;min-width:120px" onclick="openAddRbo('${sq.id}','${ini.id}','obs')" ${editable?'':'disabled'}><i class="ti ti-plus"></i>Adicionar obs</button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+
+    // ── Header clicável ──
+    const riskTotal = sq.initiatives.reduce((a,i)=>a+(i.risks||[]).length,0);
+    const blockTotal= sq.initiatives.reduce((a,i)=>a+(i.blockers||[]).length,0);
+    const alertBadge= riskTotal>0
+      ? `<span style="font-size:10px;color:#7B4900;background:#FFF8E1;border:.5px solid #FFD54F;padding:2px 7px;border-radius:99px;flex-shrink:0">⚠ ${riskTotal} risco${riskTotal>1?'s':''}</span>` : '';
+    const blockBadge= blockTotal>0
+      ? `<span style="font-size:10px;color:#5C0A0A;background:#FDEEEE;border:.5px solid #F0A0A0;padding:2px 7px;border-radius:99px;flex-shrink:0">🚫 ${blockTotal} bloqueio${blockTotal>1?'s':''}</span>` : '';
+
+    card.innerHTML = `
+      <div class="sc-hdr${shouldExpand?' expanded':''}" onclick="toggleSquad('${sq.id}',this)">
+        <div class="sq-icon" style="background:${sq.iconBg}">
+          <i class="ti ${sq.icon}" style="color:${sq.iconColor};font-size:19px"></i>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="sq-name" style="color:${accentCol}">${sq.name}</span>
+            ${isOwn ? `<span class="own-squad-badge" style="background:${accentCol}">Minha Squad</span>` : ''}
+            ${!editable ? `<span style="font-size:10px;color:var(--tx2)"><i class="ti ti-lock" style="font-size:10px"></i> leitura</span>` : ''}
+            ${alertBadge}${blockBadge}
+          </div>
+          <div class="sq-meta">
+            ${visI.length} iniciativas · ${vF} features · ${vS} stories · ${vPts}pts
+          </div>
+          <div class="vel-inline-wrap">
+            <span class="vel-inline-label">Velocity:</span>
+            <input class="vi-inline" type="number" min="1" max="300" value="${sq.velocity}"
+              ${editable?'':'disabled'}
+              oninput="updVel('${sq.id}',this.value)"
+              onclick="event.stopPropagation()"
+              title="Velocity médio em story points por sprint"/>
+            <span class="vel-inline-label">pts/sprint</span>
+            <span style="margin-left:8px;font-size:11px;font-weight:700;color:${capCol}">${capPct}%</span>
+            <div style="width:56px;height:4px;background:var(--bg3);border-radius:99px;overflow:hidden;margin-left:4px;flex-shrink:0">
+              <div style="width:${Math.min(100,capPct)}%;height:100%;background:${capCol};border-radius:99px"></div>
+            </div>
+          </div>
+        </div>
+        <i class="ti ti-chevron-down sc-expand-icon${shouldExpand?' open':''}" id="sq-chev-${sq.id}"></i>
+      </div>
+      <div class="sc-body${shouldExpand?' open':''}" id="sc-body-${sq.id}">
+        <div class="ilist">
+          ${initiativesHTML}
+          <button class="add-btn" onclick="openModal('${sq.id}')" ${editable?'':'disabled'}>
+            <i class="ti ti-plus"></i> Adicionar iniciativa, feature ou story
+          </button>
+        </div>
+      </div>`;
+
+    g.appendChild(card);
+  });
+
+  if(currentUser.isAdmin){
+    document.getElementById('m-i').textContent=tI;
+    document.getElementById('m-f').textContent=tF;
+    document.getElementById('m-s').textContent=tS;
+    document.getElementById('m-p').textContent=tP;
+    document.getElementById('m-d').textContent=tD;
+  }
+}
+
+function toggleSquad(sqId, hdrEl){
+  const body  = document.getElementById('sc-body-'+sqId);
+  const chev  = document.getElementById('sq-chev-'+sqId);
+  const card  = hdrEl.closest('.sc');
+  const open  = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  chev.classList.toggle('open', !open);
+  hdrEl.classList.toggle('expanded', !open);
+  card.classList.toggle('expanded', !open);
+}
+
+function renderDeps(){
+  const b=document.getElementById('dep-body');if(!b)return;
+  const deps=[];
+  SQUADS.forEach(sq=>sq.initiatives.forEach(i=>i.features.forEach(f=>f.stories.forEach(s=>{
+    if(s.dep&&spOk(s.sprint))deps.push({from:sq.name,to:s.dep,story:s.title,sprint:s.sprint});
+  }))));
+  if(!deps.length){b.innerHTML='<div class="empty">Nenhuma dependencia neste filtro</div>';return;}
+  b.innerHTML=deps.map(d=>{
+    const sp=SC[d.sprint]||SC['SP59'];
+    return `<div class="deprow"><i class="ti ti-layout-grid" style="color:#7F77DD;font-size:14px"></i>
+      <span class="dep-from">${d.from}</span><i class="ti ti-arrow-right dep-arr"></i>
+      <span class="dep-to">depende de <strong>${d.to}</strong></span>
+      <span class="dep-story">${d.story}</span>
+      <span class="dep-sc" style="background:${sp.bg};color:${sp.text};border:.5px solid ${sp.border}">${d.sprint}</span>
+    </div>`;
+  }).join('');
+}
+
+function togI(id){
+  document.getElementById('flist-'+id)?.classList.toggle('open');
+  document.getElementById('chev-'+id)?.classList.toggle('open');
+}
+function togF(id){
+  document.getElementById('slist-'+id)?.classList.toggle('open');
+  document.getElementById('fchev-'+id)?.classList.toggle('open');
+}
+function togEp(id){
+  document.getElementById('epfeats-'+id)?.classList.toggle('open');
+  document.getElementById('epchev-'+id)?.classList.toggle('open');
+}
+
+/* ── RBO PANEL ── */
+function toggleRboPanel(iId, focusType){
+  const panel = document.getElementById('rbo-panel-'+iId);
+  if(!panel) return;
+  const isOpen = panel.classList.contains('open');
+  // Fechar todos os outros painéis abertos
+  document.querySelectorAll('.rbo-panel.open').forEach(p => p.classList.remove('open'));
+  if(!isOpen){
+    panel.classList.add('open');
+    // Atualizar título conforme tipo clicado
+    const titleEl = document.getElementById('rbo-panel-title-'+iId);
+    if(titleEl){
+      const labels = {risks:'Riscos', blockers:'Bloqueios', obs:'Observações'};
+      titleEl.textContent = focusType ? labels[focusType]||'Notas' : 'Riscos, Bloqueios & Observações';
+    }
+  }
+}
+function closeRboPanel(iId){
+  document.getElementById('rbo-panel-'+iId)?.classList.remove('open');
+}
+
+/* ── STATUS MENU ── */
+function openStatusMenu(e,sqId,iId){
+  e.stopPropagation();
+  if(!canEdit(sqId))return;
+  statusTargetSqId=sqId;statusTargetIId=iId;
+  const menu=document.getElementById('status-menu');
+  menu.style.top=(e.clientY+6)+'px';
+  menu.style.left=Math.min(e.clientX,window.innerWidth-180)+'px';
+  menu.classList.add('open');
+}
+function setStatus(status){
+  const sq=SQUADS.find(s=>s.id===statusTargetSqId);
+  if(sq){const i=sq.initiatives.find(x=>x.id===statusTargetIId);if(i)i.status=status;}
+  document.getElementById('status-menu').classList.remove('open');
+  renderAll();
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#status-menu')&&!e.target.closest('.status-pill'))
+    document.getElementById('status-menu').classList.remove('open');
+});
+
+/* ══════════════════════════════════════════
+   ROAM helpers
+══════════════════════════════════════════ */
+const ROAM_CFG = {
+  'R':{label:'Resolved',  desc:'Resolvido',       cls:'roam-R', bg:'#E8F5E9',color:'#1B5E20',border:'#81C784'},
+  'O':{label:'Owned',     desc:'Assumido',         cls:'roam-O', bg:'#E3F2FD',color:'#0D47A1',border:'#90CAF9'},
+  'A':{label:'Accepted',  desc:'Aceito',           cls:'roam-A', bg:'#FFF8E1',color:'#7B5800',border:'#FFD54F'},
+  'M':{label:'Mitigated', desc:'Mitigado',         cls:'roam-M', bg:'#EEEDFE',color:'#26215C',border:'#AFA9EC'},
+  '' :{label:'—',         desc:'Não classificado', cls:'roam-none',bg:'var(--bg2)',color:'var(--tx2)',border:'var(--bd2)'},
+};
+function getRoamRadio(){
+  const sel=document.querySelector('input[name="rbo-roam"]:checked');
+  return sel?sel.value:'';
+}
+function setRoamRadio(val){
+  const r=document.querySelector(`input[name="rbo-roam"][value="${val||''}"]`);
+  if(r)r.checked=true;
+}
+
+/* ══════════════════════════════════════════
+   RBO MODAL
+══════════════════════════════════════════ */
+function openAddRbo(sqId,iId,type){
+  if(!canEdit(sqId))return;
+  rboSqId=sqId;rboIId=iId;rboType=type;rboEditId=null;
+  const isRisk=type==='risks', isObs=type==='obs';
+  const labels={risks:'Adicionar Risco',blockers:'Adicionar Bloqueio',obs:'Adicionar Observação'};
+  document.getElementById('rbo-ttl').textContent=labels[type];
+  document.getElementById('rbo-text').value='';
+  document.getElementById('rbo-text-label').textContent=isObs?'Observação *':'Descrição *';
+  document.getElementById('rbo-sev-wrap').style.display=isObs?'none':'block';
+  document.getElementById('rbo-sev').value='medio';
+  document.getElementById('rbo-roam-wrap').style.display=isRisk?'block':'none';
+  document.getElementById('rbo-owner-wrap').style.display=isRisk?'block':'none';
+  setRoamRadio('');
+  document.getElementById('rbo-owner').value='';
+  document.getElementById('err-rbo').style.display='none';
+  document.getElementById('rbo-ov').classList.add('open');
+}
+function openEditRbo(sqId,iId,type,itemId){
+  if(!canEdit(sqId))return;
+  const sq=SQUADS.find(s=>s.id===sqId);
+  const ini=sq?.initiatives.find(i=>i.id===iId);
+  const item=(ini?.[type]||[]).find(x=>x.id===itemId);
+  if(!item)return;
+  rboSqId=sqId;rboIId=iId;rboType=type;rboEditId=itemId;
+  const isRisk=type==='risks', isObs=type==='obs';
+  const labels={risks:'Editar Risco',blockers:'Editar Bloqueio',obs:'Editar Observação'};
+  document.getElementById('rbo-ttl').textContent=labels[type];
+  document.getElementById('rbo-text').value=item.text;
+  document.getElementById('rbo-text-label').textContent=isObs?'Observação *':'Descrição *';
+  document.getElementById('rbo-sev-wrap').style.display=isObs?'none':'block';
+  if(item.sev)document.getElementById('rbo-sev').value=item.sev;
+  document.getElementById('rbo-roam-wrap').style.display=isRisk?'block':'none';
+  document.getElementById('rbo-owner-wrap').style.display=isRisk?'block':'none';
+  if(isRisk){
+    setRoamRadio(item.roam||'');
+    document.getElementById('rbo-owner').value=item.owner||'';
+  }
+  document.getElementById('err-rbo').style.display='none';
+  document.getElementById('rbo-ov').classList.add('open');
+}
+function saveRbo(){
+  const text=document.getElementById('rbo-text').value.trim();
+  if(!text){document.getElementById('err-rbo').style.display='block';return;}
+  const isObs=rboType==='obs', isRisk=rboType==='risks';
+  const sev=isObs?undefined:document.getElementById('rbo-sev').value;
+  const roam=isRisk?getRoamRadio():undefined;
+  const owner=isRisk?document.getElementById('rbo-owner').value.trim()||undefined:undefined;
+  const sq=SQUADS.find(s=>s.id===rboSqId);
+  const ini=sq?.initiatives.find(i=>i.id===rboIId);
+  if(!ini)return;
+  if(!ini[rboType])ini[rboType]=[];
+  if(rboEditId){
+    const item=ini[rboType].find(x=>x.id===rboEditId);
+    if(item){item.text=text;item.sev=sev;item.roam=roam;item.owner=owner;}
+  }else{
+    const rboItem={id:newId(),text,sev,roam,owner};
+    ini[rboType].push(rboItem);
+    if(USE_AZURE && ini.azId) azPushComment(ini.azId, rboType, rboItem); // grava como comentário no Azure
+  }
+  closeRbo();renderAll();
+}
+function askDelRbo(sqId,iId,type,itemId){
+  const labels={risks:'risco',blockers:'bloqueio',obs:'observação'};
+  document.getElementById('conf-ttl').textContent='Excluir '+labels[type];
+  document.getElementById('conf-msg').textContent='Deseja excluir este item?';
+  delFn=()=>{
+    const sq=SQUADS.find(s=>s.id===sqId);
+    const ini=sq?.initiatives.find(i=>i.id===iId);
+    if(ini&&ini[type])ini[type]=ini[type].filter(x=>x.id!==itemId);
+    renderAll();
+  };
+  document.getElementById('conf-ov').classList.add('open');
+}
+function closeRbo(){document.getElementById('rbo-ov').classList.remove('open');}
+function closeRboOut(e){if(e.target.id==='rbo-ov')closeRbo();}
+
+/* ══════════════════════════════════════════
+   MODAL INICIATIVA / FEATURE / STORY
+══════════════════════════════════════════ */
+function buildSprintSelect(){
+  document.getElementById('story-sprint').innerHTML=SPRINTS.map(sp=>`<option value="${sp.id}">${sp.label} (${sp.start}–${sp.end})</option>`).join('');
+}
+function populateInitSelect(sq,selId){
+  document.getElementById('story-init').innerHTML=sq.initiatives.map(i=>`<option value="${i.id}"${i.id===selId?' selected':''}>${i.title}</option>`).join('');
+  populateFeatFromInit();
+}
+function populateFeatFromInit(){
+  const sq=SQUADS.find(s=>s.id===curSqId);if(!sq)return;
+  const iId=document.getElementById('story-init').value;
+  const ini=sq.initiatives.find(i=>i.id===iId);
+  document.getElementById('story-feat').innerHTML=(ini?.features||[]).map(f=>`<option value="${f.id}">${f.title}</option>`).join('');
+}
+function populateFeatInitSelect(sq,selId){
+  document.getElementById('feat-init').innerHTML=sq.initiatives.map(i=>`<option value="${i.id}"${i.id===selId?' selected':''}>${i.title}</option>`).join('');
+}
+function openModal(sqId){
+  if(!canEdit(sqId))return;
+  isEdit=false;editIId=null;editFId=null;editSId=null;curSqId=sqId;
+  const sq=SQUADS.find(s=>s.id===sqId);
+  document.getElementById('modal-ttl').textContent='Adicionar — '+sq.name;
+  document.getElementById('mlevel-tabs').style.display='flex';
+  document.getElementById('init-title').value='';
+  document.getElementById('init-desc').value='';
+  document.getElementById('feat-title').value='';
+  document.getElementById('feat-desc').value='';
+  document.getElementById('story-title').value='';
+  document.getElementById('story-desc').value='';
+  document.getElementById('init-badge').value='Q3';
+  document.getElementById('init-status').value='Em Priorizacao';
+  document.getElementById('story-pts').value='8';
+  buildSprintSelect();
+  populateFeatInitSelect(sq,null);
+  populateInitSelect(sq,null);
+  filterDepOpts(sq.name);
+  document.querySelectorAll('.err').forEach(e=>e.style.display='none');
+  switchLevel('init',document.querySelector('.mltab'));
+  document.getElementById('modal-ov').classList.add('open');
+}
+function openEditI(sqId,iId){
+  if(!canEdit(sqId))return;
+  isEdit=true;editIId=iId;editFId=null;editSId=null;curSqId=sqId;
+  const sq=SQUADS.find(s=>s.id===sqId),ini=sq.initiatives.find(x=>x.id===iId);
+  document.getElementById('modal-ttl').textContent='Editar iniciativa';
+  document.getElementById('mlevel-tabs').style.display='none';
+  document.getElementById('init-title').value=ini.title;
+  document.getElementById('init-badge').value=ini.type;
+  document.getElementById('init-status').value=ini.status;
+  document.getElementById('init-desc').value=ini.desc||'';
+  document.querySelectorAll('.err').forEach(e=>e.style.display='none');
+  document.querySelectorAll('.msec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-init').classList.add('active');
+  curLevel='init';
+  document.getElementById('modal-ov').classList.add('open');
+}
+function openEditF(sqId,iId,fId){
+  if(!canEdit(sqId))return;
+  isEdit=true;editIId=iId;editFId=fId;editSId=null;curSqId=sqId;
+  const sq=SQUADS.find(s=>s.id===sqId);
+  const ini=sq.initiatives.find(x=>x.id===iId);
+  const feat=ini.features.find(x=>x.id===fId);
+  document.getElementById('modal-ttl').textContent='Editar feature';
+  document.getElementById('mlevel-tabs').style.display='none';
+  populateFeatInitSelect(sq,iId);
+  document.getElementById('feat-title').value=feat.title;
+  document.getElementById('feat-desc').value=feat.desc||'';
+  document.querySelectorAll('.err').forEach(e=>e.style.display='none');
+  document.querySelectorAll('.msec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-feat').classList.add('active');
+  curLevel='feat';
+  document.getElementById('modal-ov').classList.add('open');
+}
+function openEditS(sqId,iId,fId,sId){
+  if(!canEdit(sqId))return;
+  isEdit=true;editIId=iId;editFId=fId;editSId=sId;curSqId=sqId;
+  const sq=SQUADS.find(s=>s.id===sqId);
+  const ini=sq.initiatives.find(x=>x.id===iId);
+  const feat=ini.features.find(x=>x.id===fId);
+  const s=feat.stories.find(x=>x.id===sId);
+  document.getElementById('modal-ttl').textContent='Editar user story';
+  document.getElementById('mlevel-tabs').style.display='none';
+  buildSprintSelect();
+  populateInitSelect(sq,iId);
+  document.getElementById('story-feat').value=fId;
+  document.getElementById('story-title').value=s.title;
+  document.getElementById('story-pts').value=String(s.pts);
+  document.getElementById('story-sprint').value=s.sprint;
+  document.getElementById('story-dep').value=s.dep||'';
+  document.getElementById('story-desc').value=s.desc||'';
+  filterDepOpts(sq.name);
+  document.querySelectorAll('.err').forEach(e=>e.style.display='none');
+  document.querySelectorAll('.msec').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-story').classList.add('active');
+  curLevel='story';
+  document.getElementById('modal-ov').classList.add('open');
+}
+function filterDepOpts(own){
+  Array.from(document.getElementById('story-dep').options).forEach(o=>{o.style.display=o.value===own?'none':'';});
+}
+function switchLevel(level,btn){
+  curLevel=level;
+  document.querySelectorAll('.mltab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.msec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+level).classList.add('active');
+  document.querySelectorAll('.err').forEach(e=>e.style.display='none');
+}
+function saveModal(){
+  const sq=SQUADS.find(s=>s.id===curSqId);if(!sq)return;
+  if(curLevel==='init'){
+    const t=document.getElementById('init-title').value.trim();
+    if(!t){document.getElementById('err-it').style.display='block';return;}
+    const type=document.getElementById('init-badge').value;
+    const status=document.getElementById('init-status').value;
+    const desc_i=document.getElementById('init-desc')?.value.trim()||'';
+    if(isEdit&&editIId){
+      const i=sq.initiatives.find(x=>x.id===editIId);i.title=t;i.type=type;i.status=status;i.desc=desc_i;
+    }else{
+      sq.initiatives.push({id:newId(),title:t,type,status,desc:desc_i,risks:[],blockers:[],obs:[],features:[]});
+    }
+  }else if(curLevel==='feat'){
+    const t=document.getElementById('feat-title').value.trim();
+    if(!t){document.getElementById('err-ft').style.display='block';return;}
+    const iId=document.getElementById('feat-init').value;
+    const ini=sq.initiatives.find(i=>i.id===iId);if(!ini)return;
+    const desc_f=document.getElementById('feat-desc')?.value.trim()||'';
+    if(isEdit&&editFId){const f=ini.features.find(x=>x.id===editFId);f.title=t;f.desc=desc_f;}
+    else ini.features.push({id:newId(),title:t,desc:desc_f,stories:[]});
+  }else{
+    const t=document.getElementById('story-title').value.trim();
+    if(!t){document.getElementById('err-st').style.display='block';return;}
+    const iId=document.getElementById('story-init').value;
+    const fId=document.getElementById('story-feat').value;
+    const ini=sq.initiatives.find(i=>i.id===iId);if(!ini)return;
+    const feat=ini.features.find(f=>f.id===fId);if(!feat)return;
+    const pts=parseInt(document.getElementById('story-pts').value);
+    const sprint=document.getElementById('story-sprint').value;
+    const dep=document.getElementById('story-dep').value||undefined;
+    if(isEdit&&editSId){
+      const oldI=sq.initiatives.find(i=>i.id===editIId);
+      const oldF=oldI?.features.find(f=>f.id===editFId);
+      const s=oldF?.stories.find(x=>x.id===editSId);
+      if(s){
+        s.title=t;s.pts=pts;s.sprint=sprint;s.dep=dep;s.desc=document.getElementById('story-desc')?.value.trim()||'';
+        if(USE_AZURE && s.azId) azUpdateStory(s); // reflete edição no Azure
+      }
+    }else{
+      const desc_s=document.getElementById('story-desc')?.value.trim()||'';
+      const story={id:newId(),title:t,pts,sprint,dep,desc:desc_s};
+      feat.stories.push(story);
+      if(USE_AZURE) azCreateStory(sq.id, feat, story, sprint); // cria no Azure
+    }
+  }
+  closeModal();renderAll();
+}
+
+/* ── Azure write-back (só quando USE_AZURE) ── */
+async function azCreateStory(sqId, feat, story, sprintId){
+  try{
+    showSaveIndicator('saving');
+    const sp = SPRINTS.find(s=>s.id===sprintId);
+    const created = await azFetch('/api/workitems/story', {
+      method:'POST',
+      body: JSON.stringify({
+        squadId: sqId, parentId: feat.azId || null,
+        title: story.title, description: story.desc,
+        storyPoints: story.pts, iterationPath: sp?.iterationPath || null,
+      }),
+    });
+    story.azId = created.id; // passa a ser a fonte da verdade
+    showSaveIndicator('saved');
+  }catch(e){ console.error('[Azure] criar story falhou:', e); showSaveIndicator('error'); }
+}
+async function azUpdateStory(story){
+  try{
+    showSaveIndicator('saving');
+    const resp = await fetch(AZURE_API.base + `/api/workitems/${story.azId}`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','X-Board-Key':AZURE_API.key},
+      body: JSON.stringify({ storyPoints: story.pts, title: story.title, description: story.desc }),
+    });
+    let payload={}; try{ payload = await resp.clone().json(); }catch(_){}
+    if(resp.status===409 || resp.status===412 || payload.conflict){
+      showSaveIndicator('error');
+      alert('Este item foi alterado por outra pessoa enquanto você editava.\nA página vai recarregar os dados mais recentes do Azure.');
+      const sq = SQUADS.find(s=>s.initiatives.some(i=>i.features?.some(f=>f.stories?.some(st=>st.azId===story.azId))));
+      if(sq){ sq.initiatives = await loadSquadFromAzure(sq.id); renderAll_inner(); }
+      return;
+    }
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    showSaveIndicator('saved');
+  }catch(e){ console.error('[Azure] atualizar story falhou:', e); showSaveIndicator('error'); }
+}
+async function azPushComment(azWorkItemId, kind, item){
+  if(!USE_AZURE || !azWorkItemId) return;
+  try{
+    await azFetch(`/api/workitems/${azWorkItemId}/comment`, {
+      method:'POST', body: JSON.stringify({ text: riskToComment(kind, item) }),
+    });
+  }catch(e){ console.error('[Azure] comentário falhou:', e); }
+}
+function closeModal(){document.getElementById('modal-ov').classList.remove('open');}
+function closeModalOut(e){if(e.target.id==='modal-ov')closeModal();}
+
+/* ══════════════════════════════════════════
+   DELETE
+══════════════════════════════════════════ */
+function askDelI(sqId,iId,title){
+  document.getElementById('conf-ttl').textContent='Excluir iniciativa';
+  document.getElementById('conf-msg').innerHTML=`Excluir <strong>"${title}"</strong> e todo o conteudo?`;
+  delFn=()=>{const sq=SQUADS.find(s=>s.id===sqId);sq.initiatives=sq.initiatives.filter(i=>i.id!==iId);renderAll();};
+  document.getElementById('conf-ov').classList.add('open');
+}
+function askDelF(sqId,iId,fId,title){
+  document.getElementById('conf-ttl').textContent='Excluir feature';
+  document.getElementById('conf-msg').innerHTML=`Excluir <strong>"${title}"</strong>?`;
+  delFn=()=>{const sq=SQUADS.find(s=>s.id===sqId),i=sq.initiatives.find(x=>x.id===iId);if(i)i.features=i.features.filter(f=>f.id!==fId);renderAll();};
+  document.getElementById('conf-ov').classList.add('open');
+}
+function askDelS(sqId,iId,fId,sId,title){
+  document.getElementById('conf-ttl').textContent='Excluir user story';
+  document.getElementById('conf-msg').innerHTML=`Excluir <strong>"${title}"</strong>?`;
+  delFn=()=>{const sq=SQUADS.find(s=>s.id===sqId),i=sq.initiatives.find(x=>x.id===iId),f=i?.features.find(x=>x.id===fId);if(f)f.stories=f.stories.filter(s=>s.id!==sId);renderAll();};
+  document.getElementById('conf-ov').classList.add('open');
+}
+function doDelete(){if(delFn){delFn();delFn=null;}closeConf();scheduleSave();}
+function closeConf(){document.getElementById('conf-ov').classList.remove('open');}
+function closeConfOut(e){if(e.target.id==='conf-ov')closeConf();}
+
+/* ══════════════════════════════════════════
+   DRAG & DROP
+══════════════════════════════════════════ */
+let dragSqId=null,dragIId=null;
+function onDragStart(e){
+  const el=e.currentTarget;
+  dragSqId=el.dataset.sqid;dragIId=el.dataset.iid;
+  el.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',dragIId);
+}
+function onDragOver(e){
+  e.preventDefault();e.dataTransfer.dropEffect='move';
+  const el=e.currentTarget;if(el.dataset.iid===dragIId)return;
+  const rect=el.getBoundingClientRect();
+  el.classList.remove('drag-over-top','drag-over-bottom');
+  el.classList.add(e.clientY<rect.top+rect.height/2?'drag-over-top':'drag-over-bottom');
+}
+function onDragLeave(e){e.currentTarget.classList.remove('drag-over-top','drag-over-bottom');}
+function onDrop(e){
+  e.preventDefault();
+  const target=e.currentTarget;
+  target.classList.remove('drag-over-top','drag-over-bottom');
+  const targetIId=target.dataset.iid,targetSqId=target.dataset.sqid;
+  if(!dragSqId||!dragIId||dragIId===targetIId||targetSqId!==dragSqId)return;
+  const sq=SQUADS.find(s=>s.id===dragSqId);
+  const inits=sq.initiatives;
+  const fromIdx=inits.findIndex(i=>i.id===dragIId);
+  const toIdx=inits.findIndex(i=>i.id===targetIId);
+  if(fromIdx<0||toIdx<0)return;
+  const rect=target.getBoundingClientRect();
+  const insertBefore=e.clientY<rect.top+rect.height/2;
+  const[moved]=inits.splice(fromIdx,1);
+  const newIdx=inits.findIndex(i=>i.id===targetIId);
+  inits.splice(insertBefore?newIdx:newIdx+1,0,moved);
+  renderAll();
+}
+function onDragEnd(e){
+  e.currentTarget.classList.remove('dragging','drag-over-top','drag-over-bottom');
+  document.querySelectorAll('.iblock').forEach(el=>el.classList.remove('dragging','drag-over-top','drag-over-bottom'));
+}
+
+/* ══════════════════════════════════════════
+   REPORT (admin only)
+══════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   REPORT — Resumo + Gerencial
+══════════════════════════════════════════ */
+let activeReportTab = 'resumo';
+
+function openReport(){
+  const isAdmin = currentUser?.isAdmin;
+  const userSquad = currentUser?.squad;
+
+  // Popular dropdown de squads (admin)
+  const sel = document.getElementById('report-squad-sel');
+  sel.innerHTML = '<option value="all">Todos os squads</option>' +
+    SQUADS.map(sq=>`<option value="${sq.id}">${sq.name}</option>`).join('');
+
+  // Configurar visibilidade conforme perfil
+  if(isAdmin){
+    document.getElementById('report-squad-selector').style.display='flex';
+    document.getElementById('report-tabs').style.display='flex';
+  } else {
+    // PO: forçar squad próprio, sem seletor
+    sel.value = userSquad;
+    document.getElementById('report-squad-selector').style.display='none';
+    document.getElementById('report-tabs').style.display='flex';
+  }
+
+  // Resetar aba ativa
+  activeReportTab = 'resumo';
+  document.querySelectorAll('.report-tab').forEach((t,i)=>{
+    t.classList.toggle('active', i===0);
+  });
+
+  renderActiveReport();
+
+  document.getElementById('main-view').style.display='none';
+  document.getElementById('report-screen').classList.add('open');
+}
+
+function switchReportTab(tab, btn){
+  activeReportTab = tab;
+  document.querySelectorAll('.report-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderActiveReport();
+}
+
+function getSelectedSquads(){
+  const isAdmin = currentUser?.isAdmin;
+  const selVal = document.getElementById('report-squad-sel').value;
+  if(!isAdmin){
+    return SQUADS.filter(sq=>sq.id===currentUser?.squad);
+  }
+  if(selVal==='all') return SQUADS;
+  return SQUADS.filter(sq=>sq.id===selVal);
+}
+
+function renderActiveReport(){
+  const squads = getSelectedSquads();
+  document.getElementById('report-content').innerHTML =
+    activeReportTab==='resumo'
+      ? buildResumoHTML(squads)
+      : buildGerencialHTML(squads);
+}
+
+/* ── RESUMO POR SPRINT ── */
+function buildResumoHTML(squads){
+  let html='';
+  // Tabela resumo com velocity
+  html+=`<div class="rsummary"><h3>Resumo de story points por squad · sprint</h3>
+    <table class="rtable"><thead><tr>
+      <th>Squad</th>
+      <th style="text-align:center">Velocity</th>
+      ${SPRINTS.map(sp=>`<th style="text-align:center">${sp.label}<br><span style="font-size:10px;font-weight:400">${sp.start}–${sp.end}</span></th>`).join('')}
+      <th style="text-align:center">Total pts</th>
+      <th style="text-align:center">Capacidade</th>
+    </tr></thead><tbody>`;
+
+  let colT=SPRINTS.map(()=>0), grand=0;
+  squads.forEach(sq=>{
+    const row=SPRINTS.map(sp=>sq.initiatives.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.filter(s=>s.sprint===sp.id).reduce((c,s2)=>c+s2.pts,0),0),0));
+    const rowT=row.reduce((a,b)=>a+b,0);
+    row.forEach((p,i)=>colT[i]+=p);
+    grand+=rowT;
+    const cap=sq.velocity*6;
+    const capPct=cap>0?Math.round(rowT/cap*100):0;
+    const capCol=capPct>110?'#E24B4A':capPct>90?'#EF9F27':'#1D9E75';
+    html+=`<tr>
+      <td><div style="display:flex;align-items:center;gap:7px">
+        <div style="width:20px;height:20px;border-radius:5px;background:${sq.iconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="ti ${sq.icon}" style="font-size:11px;color:${sq.iconColor}"></i>
+        </div>
+        <strong>${sq.name}</strong>
+      </div></td>
+      <td style="text-align:center;font-weight:600">${sq.velocity} pts/sprint</td>
+      ${row.map(p=>`<td style="text-align:center">${p>0?p:'—'}</td>`).join('')}
+      <td style="text-align:center;font-weight:700">${rowT}</td>
+      <td style="text-align:center">
+        <span style="font-weight:700;color:${capCol}">${capPct}%</span>
+        <div style="font-size:10px;color:var(--tx2)">${rowT}/${cap} pts</div>
+      </td>
+    </tr>`;
+  });
+
+  if(squads.length>1){
+    html+=`<tr style="border-top:.5px solid var(--bd2);background:var(--bg2)">
+      <td><strong>Total</strong></td>
+      <td></td>
+      ${colT.map(p=>`<td style="text-align:center;font-weight:700">${p}</td>`).join('')}
+      <td style="text-align:center;font-weight:700">${grand}</td>
+      <td></td>
+    </tr>`;
+  }
+  html+=`</tbody></table></div>`;
+
+  // Detalhamento por sprint
+  SPRINTS.forEach(sp=>{
+    const spT=squads.reduce((a,sq)=>a+sq.initiatives.reduce((b,i)=>b+i.features.reduce((c,f)=>c+f.stories.filter(s=>s.sprint===sp.id).reduce((d,s2)=>d+s2.pts,0),0),0),0);
+    html+=`<div class="report-sprint-block">
+      <div class="report-sprint-title"><h2>${sp.label}</h2><span class="rsd">${sp.start} – ${sp.end}</span><span class="rst">${spT} pts total</span></div>
+      <div class="report-squads-row">`;
+    squads.forEach(sq=>{
+      const rows=[];
+      sq.initiatives.forEach(ini=>ini.features.forEach(feat=>feat.stories.filter(s=>s.sprint===sp.id).forEach(s=>{
+        rows.push({ini:ini.title,feat:feat.title,story:s.title,pts:s.pts,status:ini.status,type:ini.type});
+      })));
+      const sqP=rows.reduce((a,r)=>a+r.pts,0);
+      html+=`<div class="rsq-card">
+        <div class="rsq-hdr">
+          <div style="width:22px;height:22px;border-radius:5px;background:${sq.iconBg};display:flex;align-items:center;justify-content:center">
+            <i class="ti ${sq.icon}" style="font-size:11px;color:${sq.iconColor}"></i>
+          </div>
+          <span class="rsq-name">${sq.name}</span>
+          <span class="rsq-pts" style="color:${sqP>0?sq.iconColor:'var(--tx2)'}">${sqP>0?sqP+'pt':'—'}</span>
+        </div>
+        <div class="rflist">${rows.length===0?'<div class="rno">Sem alocação</div>':rows.map(r=>{
+          const tb3=TYPE_BADGE[r.type]||TYPE_BADGE['Novo'];
+          const sc2=STATUS_CFG[r.status]||STATUS_CFG['Em Priorizacao'];
+          return `<div class="rfrow">
+            <div class="rfrow-top">
+              <span class="itype-badge" style="background:${tb3.bg};color:${tb3.color};border:.5px solid ${tb3.border};font-size:9px;padding:1px 5px">${r.type}</span>
+              <span style="flex:1;font-size:11px;color:var(--tx)">${r.ini}</span>
+              <span style="font-size:11px;font-weight:600;color:var(--tx2)">${r.pts}pt</span>
+            </div>
+            <div class="rfrow-init">↳ ${r.feat} · ${r.story}</div>
+            <div style="margin-top:2px"><span class="status-pill ${sc2.cls}" style="font-size:9px;padding:1px 6px;cursor:default">${sc2.label}</span></div>
+          </div>`;
+        }).join('')}</div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+  return html;
+}
+
+/* ── REPORT GERENCIAL ── */
+function buildGerencialHTML(squads){
+  const now = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  let html=`<div style="margin-bottom:20px;padding:14px 18px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);display:flex;align-items:center;gap:12px">
+    <i class="ti ti-report" style="font-size:22px;color:#378ADD"></i>
+    <div>
+      <div style="font-size:16px;font-weight:700;color:var(--tx)">Report Gerencial</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:2px">Gerado em ${now} · ${squads.map(s=>s.name).join(', ')}</div>
+    </div>
+  </div>`;
+
+  squads.forEach(sq=>{
+    const totalPts=sq.initiatives.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.reduce((c,s)=>c+s.pts,0),0),0);
+    const cap=sq.velocity*6;
+    const capPct=cap>0?Math.round(totalPts/cap*100):0;
+    const capCol=capPct>110?'#E24B4A':capPct>90?'#EF9F27':'#1D9E75';
+    const totalRisks=sq.initiatives.reduce((a,i)=>a+(i.risks||[]).length,0);
+    const totalBlock=sq.initiatives.reduce((a,i)=>a+(i.blockers||[]).length,0);
+
+    html+=`<div class="mg-section">
+      <div class="mg-squad-hdr">
+        <div class="mg-squad-icon" style="background:${sq.iconBg}">
+          <i class="ti ${sq.icon}" style="font-size:19px;color:${sq.iconColor}"></i>
+        </div>
+        <div>
+          <div class="mg-squad-name">${sq.name}</div>
+          <div class="mg-squad-meta">
+            ${sq.initiatives.length} iniciativas ·
+            ${sq.initiatives.reduce((a,i)=>a+i.features.length,0)} features ·
+            ${sq.initiatives.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.length,0),0)} stories ·
+            ${totalPts} pts
+            ${totalRisks>0?`· <span style="color:#7B4900">⚠ ${totalRisks} risco${totalRisks>1?'s':''}` :''}
+            ${totalBlock>0?`· <span style="color:#5C0A0A">🚫 ${totalBlock} bloqueio${totalBlock>1?'s':''}</span>`:''}
+          </div>
+        </div>
+        <div class="mg-vel-badge">
+          Velocity: ${sq.velocity} pts/sprint &nbsp;·&nbsp;
+          <span style="color:${capCol};font-weight:700">${capPct}% capacidade</span>
+        </div>
+      </div>`;
+
+    sq.initiatives.forEach(ini=>{
+      const tb=TYPE_BADGE[ini.type]||TYPE_BADGE['Novo'];
+      const sc=STATUS_CFG[ini.status]||STATUS_CFG['Em Priorizacao'];
+      const iniPts=ini.features.reduce((a,f)=>a+f.stories.reduce((b,s)=>b+s.pts,0),0);
+      const risks=ini.risks||[], blockers=ini.blockers||[], obs=ini.obs||[];
+
+      html+=`<div class="mg-ini">
+        <div class="mg-ini-hdr">
+          <span class="itype-badge" style="background:${tb.bg};color:${tb.color};border:.5px solid ${tb.border}">${ini.type}</span>
+          <span class="mg-ini-title">${ini.title}</span>
+          <span class="status-pill ${sc.cls}" style="cursor:default;margin-right:6px">${sc.label}</span>
+          <span style="font-size:12px;font-weight:700;color:var(--tx2)">${iniPts}pt</span>
+        </div>
+        <div class="mg-ini-body">
+          ${ini.desc?`<div class="mg-desc">${ini.desc}</div>`:''}
+
+          <!-- Features e Stories -->
+          ${ini.features.length===0
+            ? '<div class="mg-empty">Nenhuma feature cadastrada.</div>'
+            : `<div class="mg-subsection">
+                <div class="mg-sub-title"><i class="ti ti-layout-list" style="font-size:11px"></i> Features & User Stories</div>
+                ${ini.features.map(feat=>{
+                  const fPts=feat.stories.reduce((a,s)=>a+s.pts,0);
+                  return `<div class="mg-feat">
+                    <div class="mg-feat-name">
+                      <i class="ti ti-layers-subtract" style="font-size:11px;color:var(--tx2)"></i>
+                      ${feat.title}
+                      <span style="font-size:11px;font-weight:400;color:var(--tx2);margin-left:6px">${fPts}pt</span>
+                    </div>
+                    ${feat.desc?`<div style="font-size:11px;color:var(--tx2);font-style:italic;margin-bottom:5px;line-height:1.4">${feat.desc}</div>`:''}
+                    ${feat.stories.length===0
+                      ? '<div class="mg-empty" style="font-size:11px">Sem stories cadastradas.</div>'
+                      : feat.stories.map(s=>{
+                          const sp=SC[s.sprint]||SC['SP59'];
+                          return `<div class="mg-story">
+                            <i class="ti ti-point-filled" style="font-size:10px;color:var(--tx2);margin-top:2px;flex-shrink:0"></i>
+                            <div style="flex:1;min-width:0">
+                              <div class="mg-story-title">${s.title}</div>
+                              ${s.desc?`<div style="font-size:10px;color:var(--tx2);font-style:italic;line-height:1.4;margin-top:1px">${s.desc}</div>`:''}
+                            </div>
+                            <span class="mg-story-pts">${s.pts}pt</span>
+                            <span class="mg-story-sprint" style="background:${sp.bg};color:${sp.text};border:.5px solid ${sp.border}">${s.sprint}</span>
+                          </div>`;
+                        }).join('')
+                    }
+                  </div>`;
+                }).join('')}
+              </div>`
+          }
+
+          <!-- Riscos -->
+          ${risks.length>0?`<div class="mg-subsection">
+            <div class="mg-sub-title" style="color:#7B4900"><i class="ti ti-alert-triangle" style="font-size:11px"></i> Riscos</div>
+            ${risks.map(r=>`<div class="mg-rbo-item risks">
+              <span class="rbo-sev sev-${r.sev||'medio'}" style="margin-top:1px;flex-shrink:0">${(r.sev||'medio').charAt(0).toUpperCase()+(r.sev||'medio').slice(1)}</span>
+              <span class="mg-rbo-text">${r.text}</span>
+            </div>`).join('')}
+          </div>`:''}
+
+          <!-- Bloqueios -->
+          ${blockers.length>0?`<div class="mg-subsection">
+            <div class="mg-sub-title" style="color:#5C0A0A"><i class="ti ti-forbid-2" style="font-size:11px"></i> Bloqueios</div>
+            ${blockers.map(b=>`<div class="mg-rbo-item blockers">
+              <span class="rbo-sev sev-${b.sev||'alto'}" style="margin-top:1px;flex-shrink:0">${(b.sev||'alto').charAt(0).toUpperCase()+(b.sev||'alto').slice(1)}</span>
+              <span class="mg-rbo-text">${b.text}</span>
+            </div>`).join('')}
+          </div>`:''}
+
+          <!-- Observações -->
+          ${obs.length>0?`<div class="mg-subsection">
+            <div class="mg-sub-title"><i class="ti ti-notes" style="font-size:11px"></i> Observações</div>
+            ${obs.map(o=>`<div class="mg-rbo-item obs">
+              <span class="mg-rbo-text">${o.text}</span>
+            </div>`).join('')}
+          </div>`:''}
+
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  return html;
+}
+
+/* ── DOWNLOAD PDF via print ── */
+function downloadReportPDF(){
+  window.print();
+}
+
+function closeReport(){
+  document.getElementById('report-screen').classList.remove('open');
+  document.getElementById('main-view').style.display='';
+}
+
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function esc(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+
+
+function togDesc(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+/* ══════════════════════════════════════════
+   PERSISTÊNCIA — Firebase Realtime Database
+   Sincronização em tempo real, sem polling
+══════════════════════════════════════════ */
+
+// Firebase config
+const FB_CONFIG = {
+  apiKey:            "AIzaSyDs4gntnwfMS25dhWfZJ63KRy9fKgFO8pA",
+  authDomain:        "pi-board-ituran.firebaseapp.com",
+  databaseURL:       "https://pi-board-ituran-default-rtdb.firebaseio.com",
+  projectId:         "pi-board-ituran",
+  storageBucket:     "pi-board-ituran.firebasestorage.app",
+  messagingSenderId: "115828721959",
+  appId:             "1:115828721959:web:1abb63646931193d3ac102"
+};
+
+/* ══════════════════════════════════════════
+   FIREBASE — Save por squad (isolamento total)
+   ─────────────────────────────────────────
+   Estrutura no banco:
+     pi_board_q3_2026/
+       squads/
+         finance/       ← só Finance escreve aqui
+         fieldservice/  ← só Field Service escreve aqui
+         sales/         ← só Sales escreve aqui
+         customer/      ← só Customer escreve aqui
+         _meta/         ← metadata global (version)
+
+   Cada squad tem seu próprio nó. Finance nunca
+   sobrescreve Sales, mesmo que salvem ao mesmo tempo.
+   O listener de cada squad é independente.
+══════════════════════════════════════════ */
+
+const FB_ROOT = 'pi_board_q3_2026/squads';
+
+let fbApp=null, fbDb=null;
+let fbReady=false;
+// saveTimers por squad: {sqId: timer}
+const saveTimers  = {};
+// saving por squad: {sqId: bool}
+const savingFlags = {};
+// listeners por squad: {sqId: ref}
+const sqRefs = {};
+
+function initFirebase(){
+  return new Promise((resolve, reject) => {
+    if(window.firebase){ resolve(); return; }
+    const scripts = [
+      'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js',
+      'https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js',
+    ];
+    let loaded = 0;
+    scripts.forEach(src => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = () => { loaded++; if(loaded===scripts.length) resolve(); };
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  });
+}
+
+// Serializar um squad para salvar no Firebase
+function serializeSquad(sq){
+  return {
+    id: sq.id,
+    velocity: sq.velocity,
+    savedAt: new Date().toISOString(),
+    initiatives: sq.initiatives.map(i=>({
+      id:i.id, title:i.title, type:i.type, status:i.status, desc:i.desc||'',
+      risks:   (i.risks||[]).map(r=>({id:r.id,text:r.text,sev:r.sev||null,roam:r.roam||null,owner:r.owner||null})),
+      blockers:(i.blockers||[]).map(b=>({id:b.id,text:b.text,sev:b.sev||null})),
+      obs:     (i.obs||[]).map(o=>({id:o.id,text:o.text})),
+      features: i.features.map(f=>({
+        id:f.id, title:f.title, desc:f.desc||'',
+        stories: f.stories.map(s=>({
+          id:s.id, title:s.title, pts:s.pts,
+          sprint:s.sprint, dep:s.dep||null, desc:s.desc||''
+        }))
+      }))
+    }))
+  };
+}
+
+// Deserializar um squad recebido do Firebase
+function deserializeSquad(data){
+  return {
+    id: data.id,
+    velocity: data.velocity ?? 30,
+    initiatives: (data.initiatives||[]).map(i=>({
+      id:i.id, title:i.title, type:i.type||'Q3', desc:i.desc||'',
+      status:i.status||'Em Priorizacao',
+      risks:   (i.risks||[]).map(r=>({...r,roam:r.roam||undefined,owner:r.owner||undefined})),
+      blockers:(i.blockers||[]),
+      obs:     (i.obs||[]),
+      features:(i.features||[]).map(f=>({
+        id:f.id, title:f.title, desc:f.desc||'',
+        stories:(f.stories||[]).map(s=>({
+          id:s.id, title:s.title, pts:s.pts,
+          sprint:s.sprint, dep:s.dep||undefined, desc:s.desc||''
+        }))
+      }))
+    }))
+  };
+}
+
+// Salvar um squad específico no seu próprio nó
+async function saveSquad(sqId){
+  if(!fbDb || !fbReady) return;
+  if(savingFlags[sqId]) return;
+
+  const sq = SQUADS.find(s=>s.id===sqId);
+  if(!sq) return;
+
+  savingFlags[sqId] = true;
+  showSaveIndicator('saving');
+  try{
+    const ref = fbDb.ref(`${FB_ROOT}/${sqId}`);
+    await ref.set(serializeSquad(sq));
+    showSaveIndicator('saved');
+  }catch(e){
+    console.error(`[Firebase] Erro ao salvar squad ${sqId}:`, e);
+    showSaveIndicator('error');
+    // Reagendar em caso de falha
+    scheduleSquadSave(sqId, 3000);
+  }finally{
+    savingFlags[sqId] = false;
+  }
+}
+
+// Agendar save de um squad específico (debounce individual por squad)
+function scheduleSquadSave(sqId, delay=1200){
+  clearTimeout(saveTimers[sqId]);
+  saveTimers[sqId] = setTimeout(()=>saveSquad(sqId), delay);
+}
+
+// Ligar listener para um squad específico
+function listenSquad(sqId){
+  if(sqRefs[sqId]) return; // já tem listener
+  const ref = fbDb.ref(`${FB_ROOT}/${sqId}`);
+  sqRefs[sqId] = ref;
+
+  ref.on('value', snapshot => {
+    const data = snapshot.val();
+    if(!data) return;
+
+    const sq = SQUADS.find(s=>s.id===sqId);
+    if(!sq) return;
+
+    // Ignorar se este squad tem save pendente (nossa versão local é mais nova)
+    if(saveTimers[sqId] || savingFlags[sqId]){
+      console.log(`[Firebase] ${sqId}: update remoto ignorado — save pendente`);
+      return;
+    }
+
+    // Aplicar dados remotos neste squad específico
+    const updated = deserializeSquad(data);
+    sq.velocity     = updated.velocity;
+    sq.initiatives  = updated.initiatives;
+
+    renderAll_inner();
+    showSaveIndicator('synced');
+  }, err => {
+    console.error(`[Firebase] Listener error para squad ${sqId}:`, err);
+  });
+}
+
+async function setupFirebase(){
+  try{
+    await initFirebase();
+    fbApp = firebase.initializeApp(FB_CONFIG);
+    fbDb  = firebase.database();
+
+    showSaveIndicator('loading');
+
+    // Carregar todos os squads em paralelo
+    const loads = SQUADS.map(sq =>
+      fbDb.ref(`${FB_ROOT}/${sq.id}`).once('value').then(snap => {
+        const data = snap.val();
+        if(data){
+          const updated = deserializeSquad(data);
+          sq.velocity    = updated.velocity;
+          sq.initiatives = updated.initiatives;
+        }
+      }).catch(e => console.error(`[Firebase] Erro ao carregar ${sq.id}:`, e))
+    );
+
+    await Promise.all(loads);
+    fbReady = true;
+    renderAll_inner();
+    showSaveIndicator('synced');
+
+    // Ligar listeners em tempo real para todos os squads
+    SQUADS.forEach(sq => listenSquad(sq.id));
+
+  }catch(e){
+    console.error('[Firebase] Init error:', e);
+    showSaveIndicator('error');
+  }
+}
+
+async function loadData(){
+  if(USE_AZURE){
+    try{
+      showSaveIndicator('loading');
+      // 1) sprints do Azure (separa Q3/Q4 por data de início)
+      await loadAzureSprints();
+      // 2) work items por squad (Azure é a fonte da verdade)
+      await Promise.all(SQUADS.map(async sq => {
+        try{ sq.initiatives = await loadSquadFromAzure(sq.id); }
+        catch(e){ console.error(`[Azure] Falha ao carregar ${sq.id}:`, e); }
+      }));
+      // 3) Firebase entra só para o que não vem do Azure (velocity, ordem, cache)
+      await setupFirebaseOverlay();
+      fbReady = true;
+      renderAll_inner();
+      showSaveIndicator('synced');
+      return;
+    }catch(e){
+      console.error('[Azure] Init falhou, caindo para Firebase:', e);
+      showSaveIndicator('error');
+      // fallback: segue só com Firebase
+    }
+  }
+  return setupFirebase();
+}
+
+// Overlay do Firebase quando o Azure é a fonte: só aplica velocity e ordem,
+// sem sobrescrever as iniciativas (que vieram do Azure).
+async function setupFirebaseOverlay(){
+  try{
+    await initFirebase();
+    fbApp = fbApp || firebase.initializeApp(FB_CONFIG);
+    fbDb  = firebase.database();
+    await Promise.all(SQUADS.map(sq =>
+      fbDb.ref(`${FB_ROOT}/${sq.id}/meta`).once('value').then(snap => {
+        const m = snap.val();
+        if(m && typeof m.velocity==='number') sq.velocity = m.velocity;
+        if(m && Array.isArray(m.order)) applySavedOrder(sq, m.order);
+      }).catch(()=>{})
+    ));
+  }catch(e){ console.error('[Firebase overlay] erro:', e); }
+}
+// Reordena as iniciativas da squad conforme a ordem salva (por azId/id)
+function applySavedOrder(sq, order){
+  const idx = {}; order.forEach((k,i)=>idx[k]=i);
+  sq.initiatives.sort((a,b)=>(idx[a.azId??a.id]??999)-(idx[b.azId??b.id]??999));
+}
+
+// Quando Azure é a fonte, o Firebase guarda só velocity + ordem (nó meta).
+function saveSquadMeta(sqId){
+  if(!fbDb) return;
+  const sq = SQUADS.find(s=>s.id===sqId); if(!sq) return;
+  const order = sq.initiatives.map(i=>i.azId ?? i.id);
+  fbDb.ref(`${FB_ROOT}/${sqId}/meta`).set({ velocity: sq.velocity, order })
+    .then(()=>showSaveIndicator('saved'))
+    .catch(e=>{ console.error('[Firebase meta] erro:', e); showSaveIndicator('error'); });
+}
+
+// scheduleSave: salva apenas o(s) squad(s) que o usuário pode editar
+function scheduleSave(){
+  if(!fbReady) return; // não salvar antes de carregar
+
+  // Com Azure ativo, os work items já são gravados no Azure na hora da ação;
+  // aqui só persistimos velocity+ordem no Firebase.
+  if(USE_AZURE){
+    if(currentUser?.isAdmin){
+      clearTimeout(saveTimers['_ameta']);
+      saveTimers['_ameta'] = setTimeout(()=>SQUADS.forEach(sq=>saveSquadMeta(sq.id)), 1000);
+    } else if(currentUser?.squad){
+      clearTimeout(saveTimers['_meta_'+currentUser.squad]);
+      saveTimers['_meta_'+currentUser.squad] = setTimeout(()=>saveSquadMeta(currentUser.squad), 1000);
+    }
+    return;
+  }
+
+  if(currentUser?.isAdmin){
+    // Admin: salvar todos os squads que possam ter sido alterados
+    // (usamos um único timer global para não disparar 4 saves simultâneos)
+    clearTimeout(saveTimers['_admin']);
+    saveTimers['_admin'] = setTimeout(()=>{
+      SQUADS.forEach(sq => saveSquad(sq.id));
+    }, 1200);
+  } else {
+    // PO: salvar apenas o squad próprio
+    const sqId = currentUser?.squad;
+    if(sqId) scheduleSquadSave(sqId);
+  }
+}
+
+// saveData mantido para compatibilidade com patches anteriores
+async function saveData(){
+  SQUADS.forEach(sq => {
+    if(canEdit(sq.id)) saveSquad(sq.id);
+  });
+}
+
+// applyPayload — compatibilidade com código legado que possa chamar diretamente
+function applyPayload(p){
+  if(!p) return;
+  // suporta formato antigo (p.squads[]) e novo (p direto como squad)
+  const list = p.squads || [p];
+  list.forEach(data => {
+    const sq = SQUADS.find(s=>s.id===data.id);
+    if(!sq) return;
+    const updated = deserializeSquad(data);
+    sq.velocity    = updated.velocity;
+    sq.initiatives = updated.initiatives;
+  });
+}
+
+// Parar polling antigo — Firebase usa listener nativo
+function startPolling(){ /* não necessário com Firebase */ }
+
+function showSaveIndicator(state){
+  const el = document.getElementById('save-indicator');
+  if(!el) return;
+  clearTimeout(el._t);
+  el.style.opacity = '1';
+  const m = {
+    connected:['<i class="ti ti-wifi"></i> Conectado','#1D9E75'],
+    saving:   ['<i class="ti ti-cloud-upload"></i> Salvando...','#378ADD'],
+    saved:    ['<span class="sync-dot"></span> Salvo','#1D9E75'],
+    synced:   ['<span class="sync-dot"></span> Sincronizado','#1D9E75'],
+    error:    ['<i class="ti ti-alert-circle"></i> Erro de conexão','#E24B4A'],
+    loading:  ['<i class="ti ti-loader-2"></i> Carregando...','var(--tx2)'],
+  };
+  const [html, color] = m[state] || m.error;
+  el.innerHTML = html;
+  el.style.color = color;
+  if(state==='saved'||state==='synced')
+    el._t = setTimeout(() => { el.style.opacity='0'; }, 4000);
+}
+
+/* ══════════════════════════════════════════
+   REPORT ROAM
+══════════════════════════════════════════ */
+function openRoamReport(){
+  const isAdmin = currentUser?.isAdmin;
+  const sel = document.getElementById('roam-squad-sel');
+  sel.innerHTML = '<option value="all">Todos os squads</option>' +
+    SQUADS.map(sq=>`<option value="${sq.id}">${sq.name}</option>`).join('');
+
+  if(isAdmin){
+    document.getElementById('roam-squad-selector').style.display='flex';
+  } else {
+    sel.value = currentUser?.squad || 'all';
+    document.getElementById('roam-squad-selector').style.display='none';
+  }
+
+  renderRoamReport();
+  document.getElementById('main-view').style.display='none';
+  document.getElementById('roam-report-screen').classList.add('open');
+}
+
+function closeRoamReport(){
+  document.getElementById('roam-report-screen').classList.remove('open');
+  document.getElementById('main-view').style.display='';
+}
+
+function getRoamSquads(){
+  const isAdmin=currentUser?.isAdmin;
+  const selVal=document.getElementById('roam-squad-sel').value;
+  if(!isAdmin) return SQUADS.filter(sq=>sq.id===currentUser?.squad);
+  if(selVal==='all') return SQUADS;
+  return SQUADS.filter(sq=>sq.id===selVal);
+}
+
+function renderRoamReport(){
+  const squads = getRoamSquads();
+  const rc = document.getElementById('roam-report-content');
+  rc.innerHTML = buildRoamHTML(squads);
+}
+
+function buildRoamHTML(squads){
+  // Coletar todos os riscos
+  const allRisks = [];
+  squads.forEach(sq=>{
+    sq.initiatives.forEach(ini=>{
+      (ini.risks||[]).forEach(r=>{
+        allRisks.push({...r, squad:sq.name, squadIcon:sq.icon, squadIconColor:sq.iconColor, squadIconBg:sq.iconBg, initiative:ini.title, iniStatus:ini.status});
+      });
+    });
+  });
+
+  // Totais por ROAM
+  const counts = {R:0,O:0,A:0,M:0,'':0};
+  allRisks.forEach(r=>{ counts[r.roam||'']=(counts[r.roam||'']||0)+1; });
+  const total = allRisks.length;
+
+  if(total===0){
+    return `<div style="text-align:center;padding:48px;color:var(--tx2)">
+      <i class="ti ti-circle-check" style="font-size:40px;color:#1D9E75;display:block;margin-bottom:12px"></i>
+      <div style="font-size:16px;font-weight:600;color:var(--tx)">Nenhum risco cadastrado</div>
+      <div style="font-size:13px;margin-top:6px">Todos os squads selecionados estão sem riscos registrados.</div>
+    </div>`;
+  }
+
+  const now = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  let html = '';
+
+  // Header do report
+  html += `<div style="margin-bottom:22px;padding:16px 18px;background:var(--bg);border:.5px solid var(--bd);border-radius:var(--rl);display:flex;align-items:center;gap:12px">
+    <i class="ti ti-alert-triangle" style="font-size:24px;color:#7B4900"></i>
+    <div>
+      <div style="font-size:16px;font-weight:700">Report ROAM — Riscos</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:2px">Gerado em ${now} · ${total} risco${total>1?'s':''} · ${squads.map(s=>s.name).join(', ')}</div>
+    </div>
+  </div>`;
+
+  // Barra de resumo ROAM
+  html += `<div class="roam-summary-bar">`;
+  const roamOrder = ['R','O','A','M',''];
+  const roamIcons = {R:'ti-circle-check',O:'ti-user-check',A:'ti-flag',M:'ti-shield-check','':'ti-question-mark'};
+  roamOrder.forEach(k=>{
+    const cfg = ROAM_CFG[k];
+    const cnt = counts[k]||0;
+    if(cnt===0 && k!=='') return;
+    html += `<div class="roam-summary-chip" style="border-color:${cfg.border};background:${cfg.bg}">
+      <i class="ti ${roamIcons[k]}" style="font-size:18px;color:${cfg.color}"></i>
+      <div>
+        <div class="roam-summary-num" style="color:${cfg.color}">${cnt}</div>
+        <div style="font-size:11px;color:${cfg.color};opacity:.8">${k?cfg.label:'Não classif.'}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Grid ROAM — 4 colunas + não classificados
+  html += `<div class="roam-grid">`;
+  ['R','O','A','M'].forEach(k=>{
+    const cfg = ROAM_CFG[k];
+    const items = allRisks.filter(r=>(r.roam||'')===k);
+    html += `<div class="roam-col">
+      <div class="roam-col-hdr" style="background:${cfg.bg};color:${cfg.color}">
+        <i class="ti ${roamIcons[k]}" style="font-size:16px"></i>
+        <div>
+          <div>${cfg.label} <span style="font-size:12px;font-weight:400">(${items.length})</span></div>
+          <div style="font-size:11px;font-weight:400;opacity:.8">${cfg.desc}</div>
+        </div>
+      </div>
+      <div class="roam-col-items">
+        ${items.length===0
+          ? '<div class="roam-empty-col">Nenhum risco nesta categoria</div>'
+          : items.map(r=>`<div class="roam-risk-card ${k}">
+              <div class="roam-risk-title">${r.text}</div>
+              <div class="roam-risk-meta">
+                <div style="display:flex;align-items:center;gap:4px;font-size:10px">
+                  <div style="width:14px;height:14px;border-radius:3px;background:${r.squadIconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="ti ${r.squadIcon}" style="font-size:8px;color:${r.squadIconColor}"></i>
+                  </div>
+                  <span style="color:var(--tx2)">${r.squad}</span>
+                </div>
+                <span style="color:var(--tx2);font-size:10px">·</span>
+                <span style="font-size:10px;color:var(--tx2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.initiative}">${r.initiative}</span>
+                ${r.sev?`<span class="rbo-sev sev-${r.sev}" style="font-size:9px">${r.sev.charAt(0).toUpperCase()+r.sev.slice(1)}</span>`:''}
+                ${r.owner?`<span class="roam-owner"><i class="ti ti-user" style="font-size:9px"></i>${r.owner}</span>`:''}
+              </div>
+            </div>`).join('')
+        }
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Não classificados
+  const unclassified = allRisks.filter(r=>!r.roam);
+  if(unclassified.length>0){
+    html += `<div style="margin-bottom:24px">
+      <div style="font-size:13px;font-weight:600;color:var(--tx2);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        <i class="ti ti-question-mark" style="font-size:14px"></i>
+        Não classificados (${unclassified.length}) — aguardam definição ROAM
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        ${unclassified.map(r=>`<div class="roam-risk-card none" style="display:flex;align-items:flex-start;gap:10px">
+          <div style="flex:1">
+            <div class="roam-risk-title">${r.text}</div>
+            <div class="roam-risk-meta" style="margin-top:4px">
+              <div style="display:flex;align-items:center;gap:4px;font-size:10px">
+                <div style="width:14px;height:14px;border-radius:3px;background:${r.squadIconBg};display:flex;align-items:center;justify-content:center">
+                  <i class="ti ${r.squadIcon}" style="font-size:8px;color:${r.squadIconColor}"></i>
+                </div>
+                <span style="color:var(--tx2)">${r.squad} · ${r.initiative}</span>
+              </div>
+              ${r.sev?`<span class="rbo-sev sev-${r.sev}" style="font-size:9px">${r.sev.charAt(0).toUpperCase()+r.sev.slice(1)}</span>`:''}
+            </div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Tabela completa por squad
+  html += `<div class="rsummary" style="margin-top:24px">
+    <h3 style="margin-bottom:14px">Tabela completa de riscos</h3>
+    <table class="rtable">
+      <thead><tr>
+        <th>Squad</th><th>Iniciativa</th><th>Risco</th>
+        <th style="text-align:center">Sev.</th>
+        <th style="text-align:center">ROAM</th>
+        <th>Owner</th>
+      </tr></thead>
+      <tbody>
+        ${allRisks.map(r=>{
+          const cfg=ROAM_CFG[r.roam||''];
+          return `<tr>
+            <td style="white-space:nowrap">
+              <div style="display:flex;align-items:center;gap:5px">
+                <div style="width:16px;height:16px;border-radius:4px;background:${r.squadIconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <i class="ti ${r.squadIcon}" style="font-size:9px;color:${r.squadIconColor}"></i>
+                </div>
+                ${r.squad}
+              </div>
+            </td>
+            <td style="font-size:11px;color:var(--tx2)">${r.initiative}</td>
+            <td>${r.text}</td>
+            <td style="text-align:center">${r.sev?`<span class="rbo-sev sev-${r.sev}">${r.sev.charAt(0).toUpperCase()+r.sev.slice(1)}</span>`:'-'}</td>
+            <td style="text-align:center">
+              ${r.roam
+                ? `<span class="roam-badge ${cfg.cls}" style="cursor:default">${cfg.label}</span>`
+                : '<span style="font-size:11px;color:var(--tx2)">—</span>'
+              }
+            </td>
+            <td style="font-size:11px">${r.owner||'—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>`;
+
+  return html;
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+if(checkSession()){
+  enterApp();
+}else{
+  document.getElementById('login-screen').classList.add('visible');
+  setTimeout(()=>document.getElementById('login-user').focus(),120);
+}
+
+// renderAll_inner: renderiza SEM salvar (usado pelo listener Firebase)
+function renderAll_inner(){
+  renderSquads();
+  if(currentUser&&currentUser.isAdmin) renderDeps();
+}
+
+// renderAll público: renderiza E agenda save (usado por interações do usuário)
+// Só agenda save se o Firebase já terminou de carregar (fbReady)
+// Evita salvar dados padrão por cima do Firebase durante a inicialização
+const _origRenderAll = renderAll;
+window.renderAll = function(){
+  _origRenderAll();
+  if(fbReady) scheduleSave();
+};
+</script>
+</body>
+</html>
