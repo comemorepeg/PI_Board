@@ -630,7 +630,7 @@ body{font-family:var(--font);background:var(--bg3);color:var(--tx);min-height:10
       <div class="fg"><label class="fl">Nome da iniciativa *</label><input class="fi" id="init-title" placeholder="Ex: Pix Automatico"/><span class="err" id="err-it">Informe o nome</span></div>
       <div class="two">
         <div class="fg"><label class="fl">Tipo</label>
-          <select class="fi" id="init-badge"><option value="Q3">Q3 Programado</option><option value="Carry">Carry-over</option><option value="Atraso">Em atraso</option><option value="Novo">Novo</option></select>
+          <select class="fi" id="init-badge"><option value="Q3">Programado</option><option value="Carry">Carry-over</option><option value="Atraso">Em atraso</option><option value="Novo">Novo</option></select>
         </div>
         <div class="fg"><label class="fl">Status</label>
           <select class="fi" id="init-status"><option value="Em Priorizacao">Em Priorizacao</option><option value="Em Refinamento">Em Refinamento</option><option value="Priorizado">Priorizado</option><option value="Despriorizado">Despriorizado</option></select>
@@ -749,6 +749,9 @@ const TYPE_BADGE={
   'Atraso':{bg:'#FDEEEE',color:'#5C0A0A',border:'#F0A0A0'},
   'Novo':  {bg:'#EEEDFE',color:'#26215C',border:'#AFA9EC'},
 };
+// Rótulo exibido na tela (valor interno permanece 'Q3' por compatibilidade com dados existentes)
+const TYPE_LABEL={ 'Q3':'Programado', 'Carry':'Carry-over', 'Atraso':'Em atraso', 'Novo':'Novo' };
+const typeLabel = t => TYPE_LABEL[t] || t;
 const STATUS_CFG={
   'Em Priorizacao':{cls:'sp-priorizando',dot:'#FFD54F',label:'Em Priorizacao'},
   'Em Refinamento':{cls:'sp-refinamento',dot:'#90CAF9',label:'Em Refinamento'},
@@ -866,6 +869,7 @@ function buildTreeFromAzure(items){
     initiatives.push({
       id: 'az'+ini.id, azId: ini.id, title: ini.title, type:'Q3',
       status: mapState(ini.state), azureState: ini.state, desc: stripHtml(ini.desc),
+      startDate: ini.startDate || null, endDate: ini.endDate || null,
       risks:[], blockers:[], obs:[],
       epics: (epicsOf[ini.id]||[]).map(ep => ({
         id:'az'+ep.id, azId:ep.id, title:ep.title, desc:stripHtml(ep.desc),
@@ -1246,6 +1250,34 @@ async function loadCuration(){
   }catch(e){ console.error('[Curation] load falhou:',e); CURATION = {}; }
 }
 
+// Período (início/fim) da PI ativa, derivado das sprints — em ISO (YYYY-MM-DD)
+function activePiRange(){
+  const pi = PIS[activePiId];
+  if(!pi || !pi.sprints?.length) return null;
+  const toISO = (d) => {
+    if(!d) return null;
+    // aceita "dd/mm/aaaa" (do board) ou ISO
+    const m = String(d).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if(m) return `${m[3]}-${m[2]}-${m[1]}`;
+    return String(d).slice(0,10);
+  };
+  const starts = pi.sprints.map(s=>toISO(s.startISO||s.start)).filter(Boolean).sort();
+  const ends   = pi.sprints.map(s=>toISO(s.finishISO||s.end)).filter(Boolean).sort();
+  if(!starts.length) return null;
+  return { from: starts[0], to: ends.length?ends[ends.length-1]:starts[starts.length-1] };
+}
+// A iniciativa tem datas que caem dentro do período da PI ativa? (para ordenar as priorizadas primeiro)
+function iniInActivePeriod(ini){
+  const r = activePiRange();
+  if(!r || (!ini.startDate && !ini.endDate)) return false;
+  const s = ini.startDate ? String(ini.startDate).slice(0,10) : null;
+  const e = ini.endDate   ? String(ini.endDate).slice(0,10)   : null;
+  // overlap: começa antes do fim da PI E termina depois do início da PI
+  const startsBeforePiEnd = s ? s <= r.to : true;
+  const endsAfterPiStart  = e ? e >= r.from : true;
+  return startsBeforePiEnd && endsAfterPiStart;
+}
+
 
 const SQUADS=[
   {id:'finance',name:'Finance',icon:'ti-report-money',iconColor:'#1D9E75',iconBg:'#E1F5EE',velocity:34,sprints:6,
@@ -1492,6 +1524,13 @@ function renderSquads(){
       curatedVisI = visI; // sem curadoria ainda → mostra todas (esmaecidas) para sinalizar que falta curar
     }
 
+    // Ordenação: iniciativas cujas datas (Start/End) caem no período da PI vêm primeiro
+    // (são as teoricamente priorizadas para discutir na PI). Mantém a ordem original como desempate.
+    curatedVisI = curatedVisI
+      .map((ini, idx) => ({ ini, idx, prio: iniInActivePeriod(ini) ? 0 : 1 }))
+      .sort((a, b) => a.prio - b.prio || a.idx - b.idx)
+      .map(x => x.ini);
+
     // Contadores refletem só o que está na PI (as incluídas)
     const inPiI = visI.filter(i=>isIniInPi(sq.id, i));
     const countBase = hasCur ? inPiI : [];
@@ -1598,9 +1637,10 @@ function renderSquads(){
                 ? `<input type="checkbox" class="curation-chk" ${iniIn?'checked':''} onclick="event.stopPropagation();toggleIniInPi('${sq.id}','${iniKey(ini)}')" title="Incluir na PI"/>`
                 : `<i class="ti ti-grip-vertical drag-handle${editable && !inCuration?'':' disabled'}"></i>`}
               <div class="itoggle" onclick="togI('${ini.id}')">
-                <span class="itype-badge" style="background:${tb.bg};color:${tb.color};border:.5px solid ${tb.border}">${ini.type}</span>
+                <span class="itype-badge" style="background:${tb.bg};color:${tb.color};border:.5px solid ${tb.border}">${typeLabel(ini.type)}</span>
                 <span class="ititle" title="${ini.title}">${ini.title}</span>
                 ${iniIn && !inCuration?`<span class="pi-badge-in" title="Nesta PI"><i class="ti ti-check" style="font-size:8px"></i> PI</span>`:''}
+                ${iniInActivePeriod(ini)?`<span class="pi-badge-in" style="background:#FFF3E0;color:#8A4B00;border-color:#FFB74D" title="Datas dentro do período desta PI"><i class="ti ti-calendar-star" style="font-size:8px"></i> período</span>`:''}
                 <span class="ipts">${iPts}pt</span>
                 ${ini.desc?`<button class="desc-toggle" onclick="event.stopPropagation();togDesc('idesc-${ini.id}')" title="Ver descrição"><i class="ti ti-info-circle"></i></button>`:''}
                 ${rCountBadge}
@@ -1917,8 +1957,23 @@ function closeRboOut(e){if(e.target.id==='rbo-ov')closeRbo();}
 function buildSprintSelect(){
   document.getElementById('story-sprint').innerHTML=SPRINTS.map(sp=>`<option value="${sp.id}">${sp.label} (${sp.start}–${sp.end})</option>`).join('');
 }
+// Iniciativas que a squad selecionou para a PI ativa (para os combos de adicionar/editar).
+// Se ainda não houver curadoria, cai para todas as iniciativas (evita combo vazio no 1º uso).
+function piInitiatives(sq, alsoInclude){
+  if(!sq) return [];
+  const hasCur = squadHasCuration(sq.id);
+  let list = hasCur ? sq.initiatives.filter(i=>isIniInPi(sq.id, i)) : sq.initiatives.slice();
+  // garante que a iniciativa em edição apareça mesmo que não esteja curada
+  if(alsoInclude && !list.some(i=>i.id===alsoInclude)){
+    const extra = sq.initiatives.find(i=>i.id===alsoInclude);
+    if(extra) list = [extra, ...list];
+  }
+  return list;
+}
+
 function populateInitSelect(sq,selId){
-  document.getElementById('story-init').innerHTML=sq.initiatives.map(i=>`<option value="${i.id}"${i.id===selId?' selected':''}>${i.title}</option>`).join('');
+  const list = piInitiatives(sq, selId);
+  document.getElementById('story-init').innerHTML=list.map(i=>`<option value="${i.id}"${i.id===selId?' selected':''}>${i.title}</option>`).join('');
   populateFeatFromInit();
 }
 function populateFeatFromInit(){
@@ -1928,7 +1983,8 @@ function populateFeatFromInit(){
   document.getElementById('story-feat').innerHTML=(ini?.features||[]).map(f=>`<option value="${f.id}">${f.title}</option>`).join('');
 }
 function populateFeatInitSelect(sq,selId){
-  document.getElementById('feat-init').innerHTML=sq.initiatives.map(i=>`<option value="${i.id}"${i.id===selId?' selected':''}>${i.title}</option>`).join('');
+  const list = piInitiatives(sq, selId);
+  document.getElementById('feat-init').innerHTML=list.map(i=>`<option value="${i.id}"${i.id===selId?' selected':''}>${i.title}</option>`).join('');
 }
 function openModal(sqId){
   if(!canEdit(sqId))return;
@@ -2389,7 +2445,7 @@ function buildGerencialHTML(squads){
 
       html+=`<div class="mg-ini">
         <div class="mg-ini-hdr">
-          <span class="itype-badge" style="background:${tb.bg};color:${tb.color};border:.5px solid ${tb.border}">${ini.type}</span>
+          <span class="itype-badge" style="background:${tb.bg};color:${tb.color};border:.5px solid ${tb.border}">${typeLabel(ini.type)}</span>
           <span class="mg-ini-title">${ini.title}</span>
           <span class="status-pill ${sc.cls}" style="cursor:default;margin-right:6px">${sc.label}</span>
           <span style="font-size:12px;font-weight:700;color:var(--tx2)">${iniPts}pt</span>
