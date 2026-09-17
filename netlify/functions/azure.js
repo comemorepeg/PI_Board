@@ -102,10 +102,15 @@ async function getSprints() {
 async function getSquadWorkitems(squadId) {
   const area = SQUAD_AREA[squadId];
   if (!area) { const e = new Error('squad desconhecida'); e.status = 404; throw e; }
+  // Campos de data customizados (Start/End). Nomes de referência configuráveis por env.
+  const F_START = process.env.FIELD_START_DATE || 'Custom.StartDate';
+  const F_END   = process.env.FIELD_END_DATE   || 'Custom.EndDate';
   const wiql = { query:
     `SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '${PROJECT}' ` +
     `AND [System.AreaPath] UNDER '${area.replace(/\\/g, '\\\\')}' ` +
     `AND [System.WorkItemType] IN ('${WIT_INITIATIVE}','Epic','Feature','User Story') ` +
+    // só em aberto: exclui concluídas e removidas
+    `AND [System.State] NOT IN ('Closed','Removed') ` +
     `ORDER BY [${FIELD_PRIORITY}] ASC` };
   const wiqlRes = await azdo('wit/wiql', { method: 'POST', body: wiql });
   const ids = (wiqlRes.workItems || []).map(w => w.id);
@@ -121,10 +126,16 @@ async function getSquadWorkitems(squadId) {
       const pr = wi.relations.find(r => r.rel === 'System.LinkTypes.Hierarchy-Reverse');
       if (pr) parent = parseInt(pr.url.split('/').pop());
     }
+    // datas customizadas: tenta o nome configurado; senão procura campo cujo nome termine em start/enddate
+    const f = wi.fields || {};
+    const findBySuffix = (suf) => { const k = Object.keys(f).find(k => k.toLowerCase().endsWith(suf)); return k ? f[k] : null; };
+    const startDate = f[F_START] ?? findBySuffix('startdate') ?? null;
+    const endDate   = f[F_END]   ?? findBySuffix('enddate')   ?? null;
     return { id: wi.id, type: wi.fields['System.WorkItemType'], title: wi.fields['System.Title'],
       state: wi.fields['System.State'], desc: wi.fields['System.Description'] || '', parent,
       iteration: wi.fields['System.IterationPath'] || null, area: wi.fields['System.AreaPath'] || null,
-      storyPoints: wi.fields[FIELD_STORYPOINTS] ?? null, priority: wi.fields[FIELD_PRIORITY] ?? null };
+      storyPoints: wi.fields[FIELD_STORYPOINTS] ?? null, priority: wi.fields[FIELD_PRIORITY] ?? null,
+      startDate, endDate };
   });
   return { squad: squadId, items };
 }
