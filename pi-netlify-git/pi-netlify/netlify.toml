@@ -1,0 +1,14 @@
+# Netlify — PI Board + backend Azure DevOps
+# O board é servido como site estático (index.html na raiz).
+# As chamadas /api/* são redirecionadas para a Netlify Function que guarda o PAT.
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# /api/qualquer-coisa  →  a function "azure" (mantém o resto do caminho em :splat)
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/azure/:splat"
+  status = 200
+  force = true
