@@ -1105,20 +1105,50 @@ async function savePi(){
   const pi={ id, name, createdAt:new Date().toISOString(), sprints:chosen };
   PIS[id]=pi;
   activePiId=id;
-  await persistPis();
+
+  // tenta persistir e SÓ fecha o modal se salvar de verdade
+  const okSaved = await persistPis();
+  if(!okSaved){
+    // reverte da memória para não dar falsa impressão de que salvou
+    delete PIS[id];
+    alert('Não foi possível salvar a PI no Firebase.\n\n'
+      + 'Verifique:\n'
+      + '• se a conexão com o Firebase está ativa (recarregue a página);\n'
+      + '• se as regras do Realtime Database liberam o nó "pi_board".\n\n'
+      + 'A PI NÃO foi criada. Veja o console (F12) para o erro técnico.');
+    return;
+  }
   applyActivePi();
   closePiModal();
   renderPiSelector();
   renderAll();
 }
 
-// ── Persistência ──
+// ── Persistência ── (retorna true se salvou, false se falhou)
 async function persistPis(){
-  if(!fbDb) return;
+  // Garante conexão com o Firebase mesmo se o load do Azure tiver falhado antes
+  if(!fbDb){
+    try{
+      await initFirebase();
+      fbApp = fbApp || firebase.initializeApp(FB_CONFIG);
+      fbDb  = firebase.database();
+    }catch(e){
+      console.error('[PI] não foi possível inicializar o Firebase:', e);
+      return false;
+    }
+  }
+  if(!fbDb){ console.error('[PI] fbDb indisponível'); return false; }
   try{
+    showSaveIndicator('saving');
     await fbDb.ref(`${PI_ROOT}/pis`).set(PIS);
     await fbDb.ref(`${PI_ROOT}/activePi`).set(activePiId);
-  }catch(e){ console.error('[PI] persist falhou:',e); }
+    showSaveIndicator('saved');
+    return true;
+  }catch(e){
+    console.error('[PI] persist falhou:',e);
+    showSaveIndicator('error');
+    return false;
+  }
 }
 async function loadPis(){
   if(!fbDb) return;
