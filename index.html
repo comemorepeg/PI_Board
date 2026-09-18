@@ -1564,11 +1564,6 @@ function renderSquads(){
       ? expanded[sq.id]
       : (isOwn || (currentUser.isAdmin && idx===0));
 
-    const allPts=sq.initiatives.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.reduce((c,s)=>c+s.pts,0),0),0);
-    const cap=sq.velocity*6;
-    const capPct=cap>0?Math.min(150,Math.round(allPts/cap*100)):0;
-    const capCol=capPct>110?'#E24B4A':capPct>90?'#EF9F27':'#1D9E75';
-
     const visI=sq.initiatives.map(i=>({
       ...i,
       features:i.features.map(f=>({...f,stories:f.stories.filter(s=>spOk(s.sprint))}))
@@ -1603,6 +1598,12 @@ function renderSquads(){
     const vF=countBase.reduce((a,i)=>a+i.features.length,0);
     const vD=countBase.reduce((a,i)=>a+i.features.reduce((b,f)=>b+f.stories.filter(s=>s.dep).length,0),0);
     tI+=countBase.length;tF+=vF;tS+=vS;tP+=vPts;tD+=vD;
+
+    // ── Capacidade: baseada nos pontos EFETIVAMENTE na PI (vPts) e no nº real de sprints da PI ──
+    const nSprints = (PIS[activePiId]?.sprints?.length) || SPRINTS.length || 6;
+    const cap=sq.velocity*nSprints;
+    const capPct=cap>0?Math.min(150,Math.round(vPts/cap*100)):0;
+    const capCol=capPct>110?'#E24B4A':capPct>90?'#EF9F27':'#1D9E75';
 
     const card=document.createElement('div');
     card.dataset.sqid = sq.id;
@@ -2202,35 +2203,57 @@ function saveModal(){
 
 /* ── Azure write-back (só quando USE_AZURE) ── */
 async function azCreateStory(sqId, feat, story, sprintId){
+  const parentId = azNumericId(feat);
+  if(!parentId){
+    console.error('[Azure] criar story: feature sem azId. Faça "Atualizar" na squad.', feat);
+    showSaveIndicator('error');
+    alert('Não foi possível criar a User Story no Azure porque a feature selecionada não tem vínculo com o Azure.\n\nClique em "Atualizar" na squad e tente novamente.');
+    return;
+  }
   try{
     showSaveIndicator('saving');
     const sp = SPRINTS.find(s=>s.id===sprintId);
     const created = await azFetch('/api/workitems/story', {
       method:'POST',
       body: JSON.stringify({
-        squadId: sqId, parentId: feat.azId || null,
+        squadId: sqId, parentId,
         title: story.title, description: story.desc,
         storyPoints: story.pts, iterationPath: sp?.iterationPath || null,
       }),
     });
     story.azId = created.id; // passa a ser a fonte da verdade
     showSaveIndicator('saved');
-  }catch(e){ console.error('[Azure] criar story falhou:', e); showSaveIndicator('error'); }
+  }catch(e){ console.error('[Azure] criar story falhou:', e); showSaveIndicator('error');
+    alert('Erro ao criar a User Story no Azure. Veja o console (F12) para detalhes.'); }
+}
+// Extrai o ID numérico do Azure de uma iniciativa/feature (aceita azId ou id prefixado 'az123')
+function azNumericId(obj){
+  if(obj?.azId != null) return obj.azId;
+  const m = String(obj?.id||'').match(/^az(\d+)$/);
+  return m ? parseInt(m[1]) : null;
 }
 // Cria uma Feature no Azure, vinculada à iniciativa (parent = azId da iniciativa)
 async function azCreateFeature(sqId, ini, feature){
+  const parentId = azNumericId(ini);
+  if(!parentId){
+    console.error('[Azure] criar feature: iniciativa sem azId (não veio do Azure). Faça "Atualizar" na squad e tente de novo.', ini);
+    showSaveIndicator('error');
+    alert('Não foi possível criar a Feature no Azure porque a iniciativa selecionada não tem vínculo com o Azure.\n\nClique em "Atualizar" na squad para recarregar do Azure e tente novamente.');
+    return;
+  }
   try{
     showSaveIndicator('saving');
     const created = await azFetch('/api/workitems/feature', {
       method:'POST',
       body: JSON.stringify({
-        squadId: sqId, parentId: ini.azId || null,
+        squadId: sqId, parentId,
         title: feature.title, description: feature.desc,
       }),
     });
     feature.azId = created.id; // passa a ser a fonte da verdade
     showSaveIndicator('saved');
-  }catch(e){ console.error('[Azure] criar feature falhou:', e); showSaveIndicator('error'); }
+  }catch(e){ console.error('[Azure] criar feature falhou:', e); showSaveIndicator('error');
+    alert('Erro ao criar a Feature no Azure. Veja o console (F12) para detalhes.'); }
 }
 async function azUpdateStory(story){
   try{
